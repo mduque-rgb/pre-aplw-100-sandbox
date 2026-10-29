@@ -1,0 +1,40 @@
+/* Home screen, welcome, guide and nudge */
+/* Home indicator */
+/* Welcome box (learner's name) */
+.welcome{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:1.2em;box-sizing:border-box;background:rgba(15,25,55,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:18px}
+.wl-card{background:#fff;color:#1f2430;border-radius:1.2em;width:min(27em,100%);max-height:100%;overflow:auto;box-sizing:border-box;padding:1.3em 1.6em 1.5em;box-shadow:0 20px 50px rgba(0,0,0,.35);font-size:1.15em;line-height:1.45;animation:mission-pop .4s ease-out}
+.wl-icon{font-size:2em;line-height:1}
+.wl-card h2{margin:.25em 0 .2em;font-size:1.35em}
+.wl-card p{margin:0 0 .8em}
+.wl-field{display:block;margin:0 0 .75em}
+.wl-field span{display:block;font-weight:600;margin-bottom:.25em}
+.wl-field input{width:100%;box-sizing:border-box;font:inherit;padding:.6em .8em;border:2px solid #cfd4dc;border-radius:.7em;color:#1f2430;background:#fff;outline:none}
+.wl-field input:focus{border-color:#1f6fe0;box-shadow:0 0 0 3px rgba(31,111,224,.2)}
+.wl-field input.bad{border-color:#e6a817;background:#fff6dd}
+.wl-err{background:#fff6dd;border:2px solid #e6a817;color:#4a3500;border-radius:.7em;padding:.5em .8em}
+.wl-go{width:100%;border:0;background:#1f6fe0;color:#fff;font:inherit;font-weight:700;border-radius:2em;padding:.7em 1em;cursor:pointer;margin-top:.2em}
+.wl-go:hover{background:#1a5fc4}
+.wl-go:focus-visible{outline:3px solid #1f2430;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.wl-card{animation:none}}
+/* First instruction: open the browser and go to www.gmail.com */
+.guide{position:absolute;left:50%;bottom:15.4em;transform:translateX(-50%);width:min(32em,calc(100% - 3em));box-sizing:border-box;z-index:6;background:#ffedd5;color:#7c2d12;border:3px solid #ea580c;border-radius:1em;padding:.8em 1.1em .7em;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:1.05em;line-height:1.35;animation:mission-pop .5s ease-out}
+.guide p{margin:0}
+.guide-k{font-size:.82em;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#c2410c}
+.guide-t{font-size:1.2em;font-weight:800;color:#9a3412;margin:.1em 0 .35em!important}
+.guide ol{margin:0;padding-left:1.3em}
+.guide li{margin:.15em 0}
+.guide b,.guide-strip b{color:#9a3412}
+.guide-strip{background:#ffedd5;color:#7c2d12;border-bottom:3px solid #ea580c;box-shadow:inset .45em 0 0 #ea580c;padding:.6em 1em .6em 1.4em;font-size:1.05em;line-height:1.4;animation:mission-pop .5s ease-out}
+@media (prefers-reduced-motion:reduce){.guide,.guide-strip{animation:none}}
+.homebar{position:absolute;bottom:.45em;left:50%;transform:translateX(-50%);width:9em;height:.4em;border-radius:1em;background:rgba(255,255,255,.75);z-index:20;border:0;padding:0;cursor:pointer}
+.homebar:hover{background:#fff}
+.layer ~ .homebar{background:rgba(0,0,0,.35)}
+.homebar:focus-visible{outline:2px solid var(--accent)}
+
+/* Nudge arrow: points at an element the learner hasn't tapped yet */
+.nudge{position:absolute;z-index:12;width:5.2em;height:5.2em;pointer-events:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));animation:nudge-pulse 1.1s ease-in-out infinite;transform-origin:50% 100%}
+.nudge svg{width:100%;height:100%;display:block}
+.nudge.up{transform-origin:50% 0}
+.nudge.up svg{transform:rotate(180deg)}
+@keyframes nudge-pulse{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-.5em) scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.nudge{animation:none}}

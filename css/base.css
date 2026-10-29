@@ -1,0 +1,53 @@
+/* Base reset and tablet shell */
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+
+/* Layout: a single tablet frame centered on a quiet page; apps open as full-screen layers inside the frame. */
+:root{
+  --bg:#e9ecf1; --fg:#1f2430; --muted:#6b7280;
+  --frame:#1a1c22; --frame-edge:#3a3d47;
+  --screen-a:#2c6fd1; --screen-b:#7cc4f0; --screen-c:#f3a5c5;
+  --glass:rgba(255,255,255,.28); --glass-border:rgba(255,255,255,.45);
+  --app-bg:#ffffff; --app-fg:#1f2430; --app-muted:#6b7280; --app-line:#e3e6eb; --app-field:#eef0f4; --accent:#1f6fe0;
+  /* Gentle correction pop-up (lives inside the always-light app screen) */
+  --tip-bg:#fff6dd; --tip-border:#e6a817; --tip-fg:#4a3500; --tip-strong:#7a4a00; --tip-chip:#ffe9a8;
+  --font:-apple-system,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#15171c; --fg:#e8eaf0; --muted:#9aa1ad; --frame-edge:#4a4e5a; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#15171c; --fg:#e8eaf0; --muted:#9aa1ad; --frame-edge:#4a4e5a; color-scheme:dark }
+
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);display:flex;flex-direction:column;align-items:center;justify-content:center;padding-inline:16px;padding-block:20px;box-sizing:border-box;gap:14px}
+.hint{color:var(--muted);font-size:14px;margin:0;text-align:center;text-wrap:balance}
+
+/* Tablet frame */
+.tablet{position:relative;width:min(100%,980px);aspect-ratio:4/3;max-width:100%;background:var(--frame);border:2px solid var(--frame-edge);border-radius:34px;padding:22px;box-sizing:border-box;box-shadow:0 30px 60px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.06)}
+.tablet::before{content:"";position:absolute;top:9px;left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:#0a0b0e;box-shadow:inset 0 0 2px #334}
+.screen{position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;background:
+  radial-gradient(120% 80% at 10% 100%,var(--screen-c) 0%,transparent 55%),
+  radial-gradient(90% 70% at 90% 0%,var(--screen-b) 0%,transparent 60%),
+  linear-gradient(160deg,var(--screen-a),#1a3f8a);color:#fff;font-size:clamp(10px,1.3vw,14px)}
+
+/* Status bar */
+.status{position:absolute;inset:0 0 auto 0;height:2.2em;display:flex;align-items:center;justify-content:space-between;padding:0 1.4em;font-size:1em;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.3);z-index:5;pointer-events:none}
+.status .right{display:flex;gap:.6em;align-items:center}
+.status svg{width:1.3em;height:1.3em;fill:#fff}
+
+/* Home screen */
+.home{position:absolute;inset:0;display:flex;flex-direction:column;padding:3.2em 2em 1.2em;box-sizing:border-box}
+.apps{flex:1;display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:min-content;gap:1.6em 1em;align-content:start;justify-items:center}
+.dock{align-self:center;display:flex;gap:1.4em;padding:.9em 1.4em;background:var(--glass);border:1px solid var(--glass-border);border-radius:1.6em;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.app{display:flex;flex-direction:column;align-items:center;gap:.45em;background:none;border:0;padding:0;color:#fff;font:inherit;cursor:pointer;width:5.4em}
+.app .icon{width:4.6em;height:4.6em;border-radius:1.05em;box-shadow:0 4px 10px rgba(0,0,0,.25);display:grid;place-items:center;transition:transform .12s}
+.app .icon svg{width:62%;height:62%;overflow:visible}
+.app:active .icon{transform:scale(.92)}
+.app:focus-visible .icon{outline:3px solid #fff;outline-offset:3px}
+.app .label{font-size:.95em;font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.4);white-space:nowrap}
+.dock .app .label{display:none}
+.dock .app{width:auto}
+.app.disabled{cursor:default}
+
+/* App layer */
+.layer{position:absolute;inset:0;background:var(--app-bg);color:var(--app-fg);display:flex;flex-direction:column;transform:scale(.3);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s;z-index:10;border-radius:18px;overflow:hidden}
+.layer.open{transform:none;opacity:1;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){.layer{transition:none}}
+

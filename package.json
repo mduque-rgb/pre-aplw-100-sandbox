@@ -1,0 +1,9 @@
+{
+  "name": "tablet-practice-sandbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "npx --yes -p typescript tsc -p jsconfig.json --noEmit"
+  }
+}
