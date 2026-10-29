@@ -1,5 +1,3 @@
-¡Tienes toda la razón, mala mía! Aquí tienes el texto completo en inglés dentro de un solo bloque de código para que puedas usar el botón de copiar directo:
-
 ```markdown
 # Tablet Practice Sandbox
 
