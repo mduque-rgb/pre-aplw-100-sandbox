@@ -52,8 +52,9 @@ export async function downloadReport() {
       await downloads.save({ filename: name, data: html });
       reportStatus(`Listo: tu informe se descargó como “${name}”. Puedes adjuntarlo en un correo, como practicaste en el paso 6.`);
     } catch (error) {
-      if (error && error.code === 'declined') reportStatus('Descarga cancelada. Toca “Descargar mi informe” si quieres intentarlo otra vez.');
-      else if (error && error.code === 'rate_limited') reportStatus('Espera un momento y vuelve a tocar “Descargar mi informe”.');
+      const code = /** @type {{code?: string}|null} */ (error)?.code;
+      if (code === 'declined') reportStatus('Descarga cancelada. Toca “Descargar mi informe” si quieres intentarlo otra vez.');
+      else if (code === 'rate_limited') reportStatus('Espera un momento y vuelve a tocar “Descargar mi informe”.');
       else reportStatus('No se pudo descargar aquí. Toca “Copiar informe” y pégalo en un correo.');
     }
     return;
@@ -77,7 +78,7 @@ export async function downloadReport() {
 export async function copyReport() {
   const body = /** @type {HTMLElement} */ ($m('m-fb').querySelector('.rp-body'));
   const text = `Informe de práctica de correo\n\n${body.innerText.replace(/\n{3,}/g, '\n\n')}`;
-  let copied = false;
+  let copied;
 
   try {
     await navigator.clipboard.writeText(text);

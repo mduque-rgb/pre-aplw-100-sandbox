@@ -39,7 +39,7 @@ function emptyText() {
 function quickHTML(message) {
   const button = (action, icon, label, className = '') => `<button class="m-qbtn${className}" type="button" data-act="${action}" data-id="${message.id}" aria-label="${label}: ${esc(message.subject)}" title="${label}">${ic(icon)}<span>${label}</span></button>`;
 
-  let html = '';
+  let html;
   if (message.folder === 'trash') html = button('row-restore', 'restore', 'Restore');
   else if (message.folder === 'spam') html = button('row-notspam', 'inbox', 'Not spam') + button('row-del', 'trash', 'Delete', ' danger');
   else html = button('row-del', 'trash', 'Delete', ' danger') + (message.mine ? '' : button('row-spam', 'spam', 'Report spam', ' warn'));
