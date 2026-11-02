@@ -6,6 +6,7 @@ import { $m } from './shared/dom.js';
 import { startClock } from './shell/clock.js';
 import { bindHome, buildHome, goHome } from './shell/home.js';
 import { bindWelcome } from './shell/welcome.js';
+import { STEP } from './mail/mission-steps.js';
 
 browser.onAuthenticated = (page, address) => mountMail(page, address);
 buildHome();
@@ -15,14 +16,14 @@ startClock();
 bindWelcome();
 
 const signOutWasMissed = () => (
-  mail.mission.step === 7
+  mail.mission.step === STEP.SIGN_OUT
   && !mail.mission.done
   && $m('mail-app')
   && !$m('m-out')
 );
 
 $m('b-close').addEventListener('click', () => {
-  if (signOutWasMissed()) logHelp(7, 'Cerraste el navegador sin cerrar sesión', 'logout');
+  if (signOutWasMissed()) logHelp(STEP.SIGN_OUT, 'Cerraste el navegador sin cerrar sesión', 'logout');
   goHome();
   browser.reset();
 });
@@ -30,7 +31,7 @@ $m('b-close').addEventListener('click', () => {
 $m('b-min').addEventListener('click', () => goHome());
 
 $m('b-tabclose').addEventListener('click', () => {
-  if (signOutWasMissed()) logHelp(7, 'Cerraste la pestaña sin cerrar sesión', 'logout');
+  if (signOutWasMissed()) logHelp(STEP.SIGN_OUT, 'Cerraste la pestaña sin cerrar sesión', 'logout');
   browser.reset();
   browser.go('start');
 });

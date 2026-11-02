@@ -7,6 +7,7 @@ import { updateLog, withHelp, withIssue, withStep, withTry } from '../domain/mis
 import { fold } from '../domain/writing-checks.js';
 import { mail, sofiaMsg } from '../state.js';
 import { drawMain } from './render.js';
+import { STEP } from '../mission-steps.js';
 
 export function showFeedback(message, kind, own) {
   let mission = mail.mission;
@@ -31,9 +32,9 @@ export function showFeedback(message, kind, own) {
   /** @type {import('../types.js').MissionContext} */
   let again = '';
   const context = mission.done ? 0
-    : mission.step === 4 && toSofia ? 4
-      : mission.step === 5 && (toBoss || nearBoss) ? 5
-        : mission.step === 6 && (toClient || nearClient) ? 6
+    : mission.step === STEP.REPLY_SOFIA && toSofia ? STEP.REPLY_SOFIA
+      : mission.step === STEP.ASK_DAY_OFF && (toBoss || nearBoss) ? STEP.ASK_DAY_OFF
+        : mission.step === STEP.SEND_INVOICE && (toClient || nearClient) ? STEP.SEND_INVOICE
           : 0;
 
   const retryFor = (who, missing) => (
@@ -46,7 +47,7 @@ export function showFeedback(message, kind, own) {
           : 'Para completar la práctica, todos los puntos deben estar en verde. Revisa los consejos marcados con “!” y toca <b>Intentarlo nuevamente</b>: tu correo se abrirá otra vez para que lo corrijas.'
   );
 
-  if (mission.step === 4 && !mission.done && toSofia) {
+  if (mission.step === STEP.REPLY_SOFIA && !mission.done && toSofia) {
     const missing = req
       ? [
         !req.greet && 'un saludo al principio',
@@ -56,9 +57,9 @@ export function showFeedback(message, kind, own) {
       : [];
 
     if (sofiaReply && own && allOk) {
-      mission = withStep(mission, 5);
+      mission = withStep(mission, STEP.ASK_DAY_OFF);
       mail.mission = mission;
-      next = 5;
+      next = STEP.ASK_DAY_OFF;
       done = '<b>¡Paso 4 completado!</b> Tu respuesta a Sofía está completa y correcta. Toca “Continuar al paso 5” para seguir.';
     } else {
       again = 'sofia';
@@ -70,7 +71,7 @@ export function showFeedback(message, kind, own) {
             ? `Tu respuesta llegó, pero le falta ${listEs(missing)}. Toca <b>Intentarlo nuevamente</b>: tu respuesta se abrirá otra vez para que la corrijas.`
             : 'Para completar la práctica, todos los puntos deben estar en verde. Revisa los consejos marcados con “!” y toca <b>Intentarlo nuevamente</b>: tu respuesta se abrirá otra vez para que la corrijas.';
     }
-  } else if (mission.step === 5 && !mission.done && toBoss) {
+  } else if (mission.step === STEP.ASK_DAY_OFF && !mission.done && toBoss) {
     const missing = req
       ? [
         !hasSubject && 'un asunto',
@@ -82,18 +83,18 @@ export function showFeedback(message, kind, own) {
       : [];
 
     if (kind === 'new' && own && allOk) {
-      mission = withStep(mission, 6);
+      mission = withStep(mission, STEP.SEND_INVOICE);
       mail.mission = mission;
-      next = 6;
+      next = STEP.SEND_INVOICE;
       done = '<b>¡Paso 5 completado!</b> Le pediste un día libre a tu jefa con un correo claro, completo y profesional. Toca “Continuar al paso 6” para la última práctica.';
     } else {
       again = 'boss';
       retry = retryFor('a tu jefa', missing);
     }
-  } else if (mission.step === 5 && !mission.done && /laura|martinez/.test(fold(message.to))) {
+  } else if (mission.step === STEP.ASK_DAY_OFF && !mission.done && /laura|martinez/.test(fold(message.to))) {
     again = 'boss';
     retry = `La dirección no es exactamente la de tu jefa. Escribiste “${esc(message.to)}”, pero debe ser “${CONTACTS.boss.email}”. Toca <b>Intentarlo nuevamente</b> y compárala letra por letra.`;
-  } else if (mission.step === 6 && !mission.done && toClient) {
+  } else if (mission.step === STEP.SEND_INVOICE && !mission.done && toClient) {
     const missing = [
       !hasSubject && 'un asunto',
       !attachments.length && 'la factura adjunta',
@@ -103,15 +104,15 @@ export function showFeedback(message, kind, own) {
     ].filter(Boolean);
 
     if (kind === 'new' && own && allOk) {
-      mission = withStep(mission, 7);
+      mission = withStep(mission, STEP.SIGN_OUT);
       mail.mission = mission;
-      next = 7;
+      next = STEP.SIGN_OUT;
       done = '<b>¡Paso 6 completado!</b> Le enviaste a tu cliente la factura correcta con un mensaje profesional. Toca “Continuar al paso 7” para la última práctica.';
     } else {
       again = 'client';
       retry = retryFor('a tu cliente', missing);
     }
-  } else if (mission.step === 6 && !mission.done && /carlos|rivera/.test(fold(message.to))) {
+  } else if (mission.step === STEP.SEND_INVOICE && !mission.done && /carlos|rivera/.test(fold(message.to))) {
     again = 'client';
     retry = `La dirección no es exactamente la de tu cliente. Escribiste “${esc(message.to)}”, pero debe ser “${CONTACTS.client.email}”. Toca <b>Intentarlo nuevamente</b> y compárala letra por letra.`;
   }
@@ -123,10 +124,10 @@ export function showFeedback(message, kind, own) {
       mission = withIssue(mission, context, warning);
     });
     mission = updateLog(mission, context, { last: warnings });
-    if (kind !== (context === 4 ? 'reply' : 'new')) {
-      mission = withHelp(mission, context, context === 4 ? 'Escribiste un correo nuevo en vez de usar “Reply”' : 'Usaste “Reply” o “Forward” en vez de “Compose”', 'tools');
+    if (kind !== (context === STEP.REPLY_SOFIA ? 'reply' : 'new')) {
+      mission = withHelp(mission, context, context === STEP.REPLY_SOFIA ? 'Escribiste un correo nuevo en vez de usar “Reply”' : 'Usaste “Reply” o “Forward” en vez de “Compose”', 'tools');
     }
-    if (!recipients.includes(context === 4 ? CONTACTS.sofia.email : context === 5 ? CONTACTS.boss.email : CONTACTS.client.email)) {
+    if (!recipients.includes(context === STEP.REPLY_SOFIA ? CONTACTS.sofia.email : context === STEP.ASK_DAY_OFF ? CONTACTS.boss.email : CONTACTS.client.email)) {
       mission = withHelp(mission, context, `La dirección tenía un error: “${message.to}”`, 'address');
     }
     mail.mission = mission;

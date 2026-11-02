@@ -1,6 +1,6 @@
 import { MAIL_ME } from './account.js';
 import { CONTACTS } from './contacts.js';
-import { sampleMail } from './data/sample-mail.js';
+import { TODAY, sampleMail } from './data/sample-mail.js';
 import { newMission } from './domain/mission-state.js';
 
 export const FOLDERS = [
@@ -44,7 +44,7 @@ export const inFolder = (message, folder) => (
 );
 
 /** @param {import('./types.js').MailMessage} message */
-export const shownDate = (message) => (message.date === 'Oct 13' ? message.time : message.date);
+export const shownDate = (message) => (message.date === TODAY ? message.time : message.date);
 
 /** @param {string} value */
 export const avColor = (value) => (

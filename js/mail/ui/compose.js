@@ -1,6 +1,7 @@
 import { esc, $m } from '../../shared/dom.js';
 import { ic } from '../../shell/icons.js';
 import { CONTACTS } from '../contacts.js';
+import { TODAY } from '../data/sample-mail.js';
 import { addMessage } from '../domain/mailbox.js';
 import { ATT_MENTION_RE, fold } from '../domain/writing-checks.js';
 import { mail } from '../state.js';
@@ -9,6 +10,7 @@ import { COACH, hideCoach, showCoach } from './coach.js';
 import { composeEl } from './compose-dom.js';
 import { showFeedback } from './feedback.js';
 import { drawMain, drawSide } from './render.js';
+import { STEP } from '../mission-steps.js';
 
 export const ownText = (body) => body.split(/\n\s*(?:On .+ wrote:|-{5,} Forwarded message)/)[0].trim();
 
@@ -45,7 +47,7 @@ export function openCompose(draft) {
   compose.dataset.mission = draft.mission || '';
   compose._atts = draft.atts ? [...draft.atts] : [];
 
-  compose.innerHTML = `<div class="mc-head"><b>${draft.title || 'New message'}</b><button class="m-tx" type="button" data-act="cx" aria-label="Close">${ic('x')}</button></div>
+  compose.innerHTML = `<div class="mc-head"><b>${esc(draft.title || 'New message')}</b><button class="m-tx" type="button" data-act="cx" aria-label="Close">${ic('x')}</button></div>
     ${draft.mission === 'client' ? `<div class="mc-mission"><b>Paso 6 de 7:</b> envía a tu cliente, ${CONTACTS.client.name}, la <b>factura número 1045</b>. En “To” escribe <b>${CONTACTS.client.email}</b>. Tu correo debe tener: <b>un asunto</b> (ej. Factura n.º 1045), <b>un saludo formal</b> (ej. Estimado Carlos:), una frase que diga que <b>le adjuntas la factura</b> y <b>una despedida formal</b>. Para adjuntarla, toca <b>Attach</b> (el clip), abajo, y elige el archivo correcto.</div>` : ''}
     ${draft.mission === 'boss' ? `<div class="mc-mission"><b>Paso 5 de 7:</b> escribe a tu jefa, ${CONTACTS.boss.name}, para pedirle un día libre. En “To” escribe <b>${CONTACTS.boss.email}</b>. Tu correo debe tener: <b>un asunto</b> (ej. Solicitud de día libre), <b>un saludo formal</b> (ej. Estimada Laura:), <b>qué día necesitas libre</b> y por qué, y <b>una despedida formal</b> (ej. Saludos cordiales,) con tu nombre. Cuando termines, toca <b>Send</b>.</div>` : ''}
     ${draft.mission === 'sofia' ? '<div class="mc-mission"><b>Paso 4 de 7:</b> escribe tu respuesta a Sofía en el cuadro grande. Tu respuesta debe tener <b>un saludo</b>, <b>tu respuesta a su pregunta</b> (¿irás a cenar el domingo?) y <b>una despedida</b>. Su correo aparece abajo, y “To” y “Subject” ya están llenos. Cuando termines, toca <b>Send</b>.</div>' : ''}
@@ -145,7 +147,7 @@ export function sendMail() {
     addr: mail.addr,
     to: to.value.trim(),
     subject: subject.value.trim() || '(no subject)',
-    date: 'Oct 13',
+    date: TODAY,
     time,
     body: body.value,
     atts: [...compose._atts],
@@ -173,7 +175,7 @@ export function composeNew() {
   const mission = mail.mission;
   openCompose({
     focus: 'to',
-    mission: mission.done ? '' : mission.step === 5 ? 'boss' : mission.step === 6 ? 'client' : '',
+    mission: mission.done ? '' : mission.step === STEP.ASK_DAY_OFF ? 'boss' : mission.step === STEP.SEND_INVOICE ? 'client' : '',
   });
 }
 

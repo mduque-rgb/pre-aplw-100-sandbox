@@ -5,6 +5,12 @@ import { CONTACTS } from '../contacts.js';
  * @typedef {import('../types.js').MailMessage} MailMessage
  */
 
+/**
+ * The practice inbox's "today". Messages with this date show their time
+ * instead of the date, and sent messages are stamped with it.
+ */
+export const TODAY = 'Oct 13';
+
 export function sampleMail() {
   let nextId = 0;
 
@@ -34,9 +40,9 @@ export function sampleMail() {
   });
 
   return [
-    message(CONTACTS.sofia.name, CONTACTS.sofia.email, 'Photos from the weekend', 'Oct 13', '9:12 AM', 'Hi!\n\nI am sending you the photos from our picnic. The one by the lake is my favorite.\n\nDo you want to come over for dinner on Sunday? I will make soup.\n\nLove,\nSofia', { unread: true }),
-    message('Public Library', 'classes@library.example', 'Reminder: Email basics class tonight', 'Oct 13', '8:30 AM', 'Hello,\n\nThis is a friendly reminder that the Email basics class starts tonight at 6 p.m. in the computer room.\n\nNo sign-up is needed. Bring your own device or use one of ours.\n\nSee you there,\nPublic Library', { unread: true }),
-    message('Daily News', 'newsletter@news.example', 'This morning\'s headlines', 'Oct 13', '6:00 AM', 'Good morning!\n\n• Community garden opens on Elm Street\n• Library adds evening computer classes\n• Farmers market moves indoors for winter\n\nRead the full stories on the Daily News website.'),
+    message(CONTACTS.sofia.name, CONTACTS.sofia.email, 'Photos from the weekend', TODAY, '9:12 AM', 'Hi!\n\nI am sending you the photos from our picnic. The one by the lake is my favorite.\n\nDo you want to come over for dinner on Sunday? I will make soup.\n\nLove,\nSofia', { unread: true }),
+    message('Public Library', 'classes@library.example', 'Reminder: Email basics class tonight', TODAY, '8:30 AM', 'Hello,\n\nThis is a friendly reminder that the Email basics class starts tonight at 6 p.m. in the computer room.\n\nNo sign-up is needed. Bring your own device or use one of ours.\n\nSee you there,\nPublic Library', { unread: true }),
+    message('Daily News', 'newsletter@news.example', 'This morning\'s headlines', TODAY, '6:00 AM', 'Good morning!\n\n• Community garden opens on Elm Street\n• Library adds evening computer classes\n• Farmers market moves indoors for winter\n\nRead the full stories on the Daily News website.'),
     message('Elm Street Community Garden', 'hello@garden.example', 'Your free garden plot is ready', 'Oct 12', '4:05 PM', 'Good news! Plot number 12 is now yours for the season.\n\nPlease stop by the library by Friday to sign the short form. Tools and watering cans are shared and kept in the blue shed.\n\nHappy planting,\nThe Garden Team', { unread: true }),
     message('Dr. Patel\'s Office', 'frontdesk@clinic.example', 'Appointment reminder for Thursday', 'Oct 12', '11:20 AM', 'Hello,\n\nThis is a reminder of your appointment on Thursday at 10:30 a.m.\n\nPlease arrive ten minutes early and bring your insurance card. If you need to change the time, reply to this email or call the front desk.\n\nThank you,\nFront Desk', { unread: true }),
     message('Weather Alerts', 'alerts@weather.example', 'Showers expected on Thursday', 'Oct 11', '5:45 PM', 'Showers are expected on Thursday with a high of 61°F.\n\nBring an umbrella if you will be outside in the morning. Friday looks cloudy and Saturday should be sunny.'),
