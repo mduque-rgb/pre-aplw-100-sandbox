@@ -270,4 +270,4 @@ export function writingChecks(own, mode) {
   return { items, req };
 }
 
-export { ATT_MENTION_RE };
+export { ATT_MENTION_RE, DATE_RE };

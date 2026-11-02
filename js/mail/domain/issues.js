@@ -40,7 +40,7 @@ export const ISSUES = Object.freeze({
   NO_SUBJECT: issue('Falta el asunto', 'subject'),
   SUBJECT_ALL_CAPS: issue('Asunto en mayúsculas', 'subject'),
   SUBJECT_TOO_LONG: issue('Asunto muy largo', 'subject'),
-  SUBJECT_UNCLEAR: issue('Asunto poco claro', 'subject'),
+  SUBJECT_UNCLEAR: issue('Asunto poco claro', 'subject'), // shown as a tip; never blocks a step
   // Body and writing
   EMPTY_BODY: issue('Mensaje vacío', 'body'),
   NO_GREETING: issue('Falta el saludo', 'greet'),

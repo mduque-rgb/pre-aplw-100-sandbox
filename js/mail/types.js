@@ -80,6 +80,7 @@
 /**
  * @typedef {Object} AnalysisItem
  * @property {boolean} ok
+ * @property {boolean} [tip]  Advice that does not block the step.
  * @property {string} t
  * @property {string} d
  */

@@ -1,7 +1,19 @@
 import { esc } from '../../shared/dom.js';
 import { INVOICE } from '../data/attachments.js';
 import { ISSUES } from './issues.js';
-import { fold, writingChecks } from './writing-checks.js';
+import { DATE_RE, fold, writingChecks } from './writing-checks.js';
+
+// Word families, so “Facturas”, “Facturación”, “Ausentarme” or “Solicito” count too.
+const DAY_OFF_SUBJECT_RE = /\b(dias?|days?|libres?|permisos?|descanso|ausen\w*|falt\w*|solicit\w*|ped\w*|pido|peticion\w*|request\w*|vacacion\w*|vacation\w*|licencia\w*|leave|off|pto|cita\w*|medic\w*|appointment\w*)\b/;
+const INVOICE_SUBJECT_RE = /(\b(factur\w*|fact|invoic\w*|bill\w*|recib\w*|receipt\w*|cobro\w*|pago\w*|payment\w*)|1045)/;
+
+/** True when the subject says what the email is about, for the given practice. */
+export function subjectIsClear(subject, mode) {
+  const text = fold(subject);
+  if (mode === 'boss') return DAY_OFF_SUBJECT_RE.test(text) || DATE_RE.test(text);
+  if (mode === 'client') return INVOICE_SUBJECT_RE.test(text);
+  return true;
+}
 
 function attCheck(attachments, mode) {
   const list = attachments || [];
@@ -52,10 +64,16 @@ export function analyze(message, kind, own, mode) {
     items.push({ ok: false, t: ISSUES.SUBJECT_ALL_CAPS.title, d: `“${quoted}” está todo en mayúsculas. En un correo parece que estás gritando. Mejor usa mayúsculas solo al principio.` });
   } else if (subject.length > 60) {
     items.push({ ok: false, t: ISSUES.SUBJECT_TOO_LONG.title, d: 'Tu asunto es largo. Procura que sea breve: unas pocas palabras bastan.' });
-  } else if (mode === 'boss' && !/\b(dia|day|dias|days|permiso|libre|off|leave|solicitud|peticion|request|ausencia|vacaciones|vacation)\b/.test(fold(subject))) {
-    items.push({ ok: false, t: ISSUES.SUBJECT_UNCLEAR.title, d: `“${quoted}” no dice de qué trata tu correo. Para tu jefa, un buen asunto es: “Solicitud de día libre – viernes 24”.` });
-  } else if (mode === 'client' && !/\b(factura|invoice|bill)\b/.test(fold(subject))) {
-    items.push({ ok: false, t: ISSUES.SUBJECT_UNCLEAR.title, d: `“${quoted}” no dice de qué trata tu correo. Para un cliente, un buen asunto es: “Factura n.º 1045”.` });
+  } else if (!subjectIsClear(subject, mode)) {
+    // A tip, not a blocker: the learner can finish the step and still sees how to improve.
+    items.push({
+      ok: true,
+      tip: true,
+      t: ISSUES.SUBJECT_UNCLEAR.title,
+      d: mode === 'boss'
+        ? `“${quoted}” podría ser más claro. Para tu jefa, un buen asunto dice qué pides, por ejemplo: “Solicitud de día libre – viernes 24”.`
+        : `“${quoted}” podría ser más claro. Para un cliente, un buen asunto menciona la factura, por ejemplo: “Factura n.º 1045”.`,
+    });
   } else {
     items.push({ ok: true, t: 'Asunto', d: `Escribiste un asunto: “${quoted}”. Así la otra persona sabe de qué trata antes de abrirlo.` });
   }

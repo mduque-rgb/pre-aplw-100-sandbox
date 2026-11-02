@@ -46,7 +46,7 @@ test('every warning produced by the analysis is in the catalog', () => {
   const seen = new Set();
   for (const sample of SAMPLES) {
     for (const item of analyze(...sample).items) {
-      if (item.ok) continue;
+      if (item.ok && !item.tip) continue;
       seen.add(item.t);
       assert.ok(categoryOf(item.t), `“${item.t}” is missing from ISSUES`);
     }

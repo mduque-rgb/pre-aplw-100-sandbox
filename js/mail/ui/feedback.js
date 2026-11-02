@@ -118,7 +118,8 @@ export function showFeedback(message, kind, own) {
   }
 
   if (context) {
-    const warnings = items.filter((item) => !item.ok).map((item) => item.t);
+    // Tips are logged so the report can mention them, but they never block the step.
+    const warnings = items.filter((item) => !item.ok || item.tip).map((item) => item.t);
     mission = withTry(mission, context);
     warnings.forEach((warning) => {
       mission = withIssue(mission, context, warning);
@@ -167,7 +168,7 @@ export function showFeedback(message, kind, own) {
     <p class="fb-sum">${allOk ? (mode === 'boss' || mode === 'client' ? '¡Excelente! Tu correo es claro, completo y profesional.' : '¡Excelente! Tu correo está completo y es amable.') : 'Tu correo salió bien. Estos consejos te ayudarán a escribir mejores correos.'}</p>
     ${done ? `<p class="fb-mission">${done}</p>` : ''}
     ${retry ? `<p class="fb-retry"><b>Casi:</b> ${retry}</p>` : ''}
-    <ul class="fb-list">${items.map((item) => `<li class="fb-item ${item.ok ? 'ok' : 'warn'}"><span class="fb-ic" aria-hidden="true"></span><div><b>${item.t}</b><div>${item.d}</div></div></li>`).join('')}</ul>
+    <ul class="fb-list">${items.map((item) => `<li class="fb-item ${item.tip ? 'info' : item.ok ? 'ok' : 'warn'}"><span class="fb-ic" aria-hidden="true"></span><div><b>${item.t}</b><div>${item.d}</div></div></li>`).join('')}</ul>
     <div class="fb-actions">${again ? '<button class="m-big primary" type="button" data-act="fb-retry">Intentarlo nuevamente</button>'
       : mission.done && done ? '<button class="m-big primary" type="button" data-act="report">Ver mi informe</button>'
         : next ? `<button class="m-big primary" type="button" data-act="fb-next">Continuar al paso ${next} →</button>`
