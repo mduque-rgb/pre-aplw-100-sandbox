@@ -115,8 +115,7 @@ export function showReport() {
     (where[category] = where[category] || new Set()).add(step);
   };
 
-  // The sign-out step has no writing issues, so it is left out of the focus list.
-  for (const step of ALL_STEPS.filter((value) => value < STEP.SIGN_OUT)) {
+  for (const step of ALL_STEPS) {
     for (const [text, count] of Object.entries(log[step].issues)) add(categoryOf(text), count, step);
     for (const help of Object.values(log[step].helps)) add(help.cat, help.n, step);
   }

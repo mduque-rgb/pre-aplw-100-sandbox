@@ -71,10 +71,10 @@
  * @property {number} nextId
  * @property {string} addr
  * @property {MissionState} mission
- * @property {{id: number, phishDone: boolean}[]} mrQueue
+ * @property {{id: number, phishDone: boolean, step: number}[]} mrQueue
  * @property {Set<number>} misreported
  * @property {ComposeDraft|null} retryDraft
- * @property {{id: number, phishDone: boolean}|null} mr
+ * @property {{id: number, phishDone: boolean, step: number}|null} mr
  */
 
 /**

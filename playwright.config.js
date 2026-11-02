@@ -19,6 +19,7 @@ export default defineConfig({
   projects: [
     { name: 'tablet', use: { ...devices['iPad (gen 7) landscape'], browserName: 'chromium' } },
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
+    { name: 'phone', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
     command: `node scripts/serve.js ${PORT}`,

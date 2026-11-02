@@ -209,3 +209,12 @@
   .m-top{gap:.5em}
   .m-msg{padding:1em}
 }
+/* Phone width: subject on its own line, quick actions as icons (their aria-label keeps the name). */
+@container (max-width:32em){
+  .m-row{flex-wrap:wrap;row-gap:.2em}
+  .m-from{flex:1;width:auto}
+  .m-subj{order:5;flex-basis:100%;padding-left:4.4em;box-sizing:border-box}
+  .m-qbtn span{display:none}
+  .m-qbtn{padding:.4em}
+  .m-date{min-width:0}
+}

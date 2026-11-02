@@ -48,8 +48,8 @@ function mrAnswer(key, message) {
   }
 }
 
-export function showMisreport(message, phishDone) {
-  mail.mr = { id: message.id, phishDone };
+export function showMisreport(message, phishDone, step = mail.mission.step) {
+  mail.mr = { id: message.id, phishDone, step };
   $m('m-fb').innerHTML = `<div class="m-fb" role="dialog" aria-modal="true" aria-labelledby="fb-h">
     <div class="fb-top"><span class="fb-tick mr-q" aria-hidden="true">?</span><h2 id="fb-h">¿Por qué lo reportaste?</h2></div>
     <p>Reportaste como spam el correo de <b>${esc(message.from)}</b>: “${esc(message.subject)}”.</p>
@@ -104,7 +104,7 @@ export function showMisreportAnswer() {
 
   if (!mail.mission.done) {
     logHelp(
-      mail.mission.step,
+      mail.mr.step,
       `Explicaste por qué lo reportaste: ${picked.map((key) => MR_REASONS.find(([value]) => value === key)[1].toLowerCase()).join('; ')}`,
       '',
     );

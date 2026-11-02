@@ -51,3 +51,15 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);displ
 .layer.open{transform:none;opacity:1;pointer-events:auto}
 @media (prefers-reduced-motion:reduce){.layer{transition:none}}
 
+
+/* Phones and short screens: drop the tablet frame so the practice uses the whole screen. */
+@media (max-width:760px),(max-height:520px){
+  html,body{height:100dvh}
+  body{padding:0;gap:0;justify-content:flex-start}
+  .hint{display:none}
+  .tablet{flex:1;min-height:0;width:100%;aspect-ratio:auto;border:0;border-radius:0;padding:0;box-shadow:none}
+  .tablet::before{display:none}
+  .screen,.layer{border-radius:0}
+  .screen{font-size:15px}
+  .apps{grid-template-columns:repeat(4,1fr)}
+}

@@ -32,7 +32,7 @@ export function nextReason() {
     hideFb();
     return;
   }
-  showMisreport(byId(next.id), next.phishDone);
+  showMisreport(byId(next.id), next.phishDone, next.step);
 }
 
 export function moveMsgs(ids, destination, text) {
@@ -41,6 +41,8 @@ export function moveMsgs(ids, destination, text) {
     return { id, folder: message.folder, prev: message.prev };
   });
 
+  // The step the learner was on when they acted, before this move advances it.
+  const stepBefore = mail.mission.step;
   mail.msgs = moveMail(mail.msgs, ids, destination);
 
   let mission = mail.mission;
@@ -131,7 +133,7 @@ export function moveMsgs(ids, destination, text) {
     : [];
 
   if (asked.length) {
-    mail.mrQueue = asked.map((id) => ({ id, phishDone: phishDone && Boolean(byId(id).warn) }));
+    mail.mrQueue = asked.map((id) => ({ id, phishDone: phishDone && Boolean(byId(id).warn), step: stepBefore }));
     nextReason();
   }
 }
