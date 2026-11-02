@@ -1,7 +1,9 @@
 import { learner, learnerName } from '../../learner/state.js';
 import { esc, $m } from '../../shared/dom.js';
 import { ic } from '../../shell/icons.js';
+import { CATEGORIES, categoryOf } from '../domain/issues.js';
 import { mail } from '../state.js';
+import { ALL_STEPS, STEP } from '../mission-steps.js';
 
 const REPORT_CSS = `.rp-who{margin:0 0 .4em;font-size:1.05em}
 body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1f2430;background:#fff;max-width:48em;margin:0 auto;padding:1.5em 1.2em;line-height:1.45}
@@ -15,51 +17,6 @@ h1{font-size:1.6em;margin:0 0 .2em}.rp-date{color:#6b7280;margin:0 0 1em}.fb-sum
 @media print{body{padding:0}.rp-focus,.rp-stat,.rp-chip,.rp-num,.rp-prio{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
 
 const STEP_NAMES = ['', 'Leer correos nuevos', 'Borrar correos que no necesitas', 'Reportar un correo falso', 'Responder a Sofía', 'Pedir un día libre a tu jefa', 'Enviar una factura a un cliente', 'Cerrar tu sesión'];
-
-const ISSUE_CAT = {
-  'Falta el saludo': 'greet',
-  'Saludo muy informal': 'greet',
-  'Falta la despedida': 'bye',
-  'Despedida muy informal': 'bye',
-  'Falta el asunto': 'subject',
-  'Asunto en mayúsculas': 'subject',
-  'Asunto muy largo': 'subject',
-  'Asunto poco claro': 'subject',
-  'Mensaje vacío': 'body',
-  'Oración demasiado larga': 'runon',
-  'Faltan espacios entre palabras': 'spaces',
-  'Falta tu respuesta a su pregunta': 'answer',
-  'Falta tu petición': 'request',
-  'Falta el día': 'request',
-  'Pídelo con cortesía': 'request',
-  'Agrega el motivo': 'request',
-  'Falta el archivo adjunto': 'attach',
-  'Archivo equivocado': 'attach',
-  'Archivos de más': 'attach',
-  'Avisa que va un adjunto': 'attach',
-  'Falta mencionar la factura': 'attach',
-  'Falta el número de factura': 'attach',
-  'Borraste el correo de Sofía, que necesitabas después': 'inbox',
-  'Borraste el correo falso en lugar de reportarlo como spam': 'phish',
-  'Reportaste como spam un correo real': 'phish',
-};
-
-const CATS = {
-  greet: ['Saludar al principio', 'Empieza siempre con un saludo en la primera línea: “Hola Sofía,” con amigos y familia, “Estimada Laura:” en el trabajo.'],
-  bye: ['Despedirte al final', 'Termina con una despedida y tu nombre debajo: “Un abrazo,” con amigos, “Saludos cordiales,” o “Atentamente,” en el trabajo.'],
-  subject: ['Escribir un asunto claro', 'Antes de tocar Send, revisa el cuadro “Subject”: unas pocas palabras que digan de qué trata, como “Factura n.º 1045”. Sin mayúsculas en todo.'],
-  address: ['Escribir bien la dirección', 'Copia la dirección letra por letra. Revisa el @, el punto y el final (.com). Una dirección nunca lleva espacios.'],
-  body: ['Escribir el mensaje', 'Antes de enviar, asegúrate de que el cuadro grande tenga tu mensaje: aunque sea corto, explica qué quieres decir.'],
-  runon: ['Escribir oraciones cortas', 'Cuando termines una idea, pon un punto (.) y empieza la siguiente oración con mayúscula. Lee tu mensaje en voz alta para notarlo.'],
-  spaces: ['Dejar espacios entre palabras', 'Deja un espacio entre cada palabra y después de cada coma o punto. Relee tu mensaje despacio antes de enviarlo.'],
-  answer: ['Contestar lo que te preguntan', 'Lee con calma la pregunta del correo y contéstala claramente, por ejemplo: “Sí, estaré ahí el domingo.”'],
-  request: ['Pedir algo con claridad y cortesía', 'Di qué pides, para qué día y por qué, con frases amables como “¿Sería posible…?” o “Quisiera pedirle…”.'],
-  attach: ['Adjuntar archivos', 'Toca Attach, lee bien el nombre del archivo antes de elegirlo, revisa que solo vaya el correcto y menciona en tu mensaje que va adjunto.'],
-  tools: ['Elegir el botón correcto', 'Para contestar un correo, ábrelo y toca Reply. Para escribir un correo nuevo, toca Compose.'],
-  phish: ['Reconocer correos falsos', 'Desconfía de premios que no pediste, de la prisa y de quien te pide tu contraseña. Repórtalos con “Report spam”.'],
-  logout: ['Cerrar tu sesión', 'Cuando termines de usar tu correo, toca “Sign out” y confirma. Cerrar el navegador o la pestaña no siempre cierra tu sesión, sobre todo en un aparato compartido.'],
-  inbox: ['Organizar tu bandeja con cuidado', 'Antes de borrar un correo, mira quién lo envía y si todavía lo necesitas.'],
-};
 
 const reportDate = () => new Date().toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -95,8 +52,9 @@ export async function downloadReport() {
       await downloads.save({ filename: name, data: html });
       reportStatus(`Listo: tu informe se descargó como “${name}”. Puedes adjuntarlo en un correo, como practicaste en el paso 6.`);
     } catch (error) {
-      if (error && error.code === 'declined') reportStatus('Descarga cancelada. Toca “Descargar mi informe” si quieres intentarlo otra vez.');
-      else if (error && error.code === 'rate_limited') reportStatus('Espera un momento y vuelve a tocar “Descargar mi informe”.');
+      const code = /** @type {{code?: string}|null} */ (error)?.code;
+      if (code === 'declined') reportStatus('Descarga cancelada. Toca “Descargar mi informe” si quieres intentarlo otra vez.');
+      else if (code === 'rate_limited') reportStatus('Espera un momento y vuelve a tocar “Descargar mi informe”.');
       else reportStatus('No se pudo descargar aquí. Toca “Copiar informe” y pégalo en un correo.');
     }
     return;
@@ -120,7 +78,7 @@ export async function downloadReport() {
 export async function copyReport() {
   const body = /** @type {HTMLElement} */ ($m('m-fb').querySelector('.rp-body'));
   const text = `Informe de práctica de correo\n\n${body.innerText.replace(/\n{3,}/g, '\n\n')}`;
-  let copied = false;
+  let copied;
 
   try {
     await navigator.clipboard.writeText(text);
@@ -157,33 +115,34 @@ export function showReport() {
     (where[category] = where[category] || new Set()).add(step);
   };
 
-  for (let step = 1; step <= 6; step++) {
-    for (const [text, count] of Object.entries(log[step].issues)) add(ISSUE_CAT[text], count, step);
+  // The sign-out step has no writing issues, so it is left out of the focus list.
+  for (const step of ALL_STEPS.filter((value) => value < STEP.SIGN_OUT)) {
+    for (const [text, count] of Object.entries(log[step].issues)) add(categoryOf(text), count, step);
     for (const help of Object.values(log[step].helps)) add(help.cat, help.n, step);
   }
 
   const focus = Object.entries(categories).sort((a, b) => b[1] - a[1]);
   const triesOf = (step) => Math.max(1, log[step].tries);
   const cleanOf = (step) => (
-    (step < 3 || triesOf(step) === 1)
+    (step < STEP.REPORT_PHISH || triesOf(step) === 1)
     && !Object.keys(log[step].issues).length
     && !Object.values(log[step].helps).some((help) => help.cat)
   );
-  const totalTries = [3, 4, 5, 6, 7].reduce((total, step) => total + triesOf(step), 0);
-  const clean = [1, 2, 3, 4, 5, 6, 7].filter(cleanOf).length;
-  const helpsN = [1, 2, 3, 4, 5, 6, 7].reduce(
+  const totalTries = ALL_STEPS.filter((step) => step >= STEP.REPORT_PHISH).reduce((total, step) => total + triesOf(step), 0);
+  const clean = ALL_STEPS.filter(cleanOf).length;
+  const helpsN = ALL_STEPS.reduce(
     (total, step) => total + Object.values(log[step].helps).filter((help) => help.cat).reduce((sum, help) => sum + help.n, 0),
     0,
   );
   const veces = (count) => (count === 1 ? '1 vez' : `${count} veces`);
 
-  const detail = (step) => step === 1
+  const detail = (step) => step === STEP.READ_NEW
     ? `Abriste ${mission.read.size} correos nuevos.`
-    : step === 2
+    : step === STEP.DELETE_OLD
       ? `Borraste ${mission.deleted.size} correos.`
-      : step === 3
-        ? (log[3].early ? 'Lo reportaste como spam incluso antes de llegar a este paso. ¡Muy bien!' : 'Encontraste el correo falso y lo reportaste como spam.')
-        : step === 7
+      : step === STEP.REPORT_PHISH
+        ? (log[STEP.REPORT_PHISH].early ? 'Lo reportaste como spam incluso antes de llegar a este paso. ¡Muy bien!' : 'Encontraste el correo falso y lo reportaste como spam.')
+        : step === STEP.SIGN_OUT
           ? `Cerraste tu sesión con “Sign out” y confirmaste${triesOf(step) > 1 ? ` (tocaste “Sign out” ${triesOf(step)} veces)` : ''}.`
           : `Lo enviaste ${triesOf(step) === 1 ? 'una vez y quedó completo' : `${triesOf(step)} veces hasta completarlo`}.`;
 
@@ -194,15 +153,15 @@ export function showReport() {
     const tries = triesOf(step);
     const last = entry.last || [];
 
-    return `<section class="rp-step"><div class="rp-head"><span class="rp-num" aria-hidden="true">${step}</span><h3>${STEP_NAMES[step]}</h3><span class="rp-chip ok">✓ Completado</span>${step >= 3 ? `<span class="rp-chip">${tries} ${tries === 1 ? 'intento' : 'intentos'}</span>` : ''}${cleanOf(step) ? '<span class="rp-chip star">★ A la primera</span>' : ''}</div>
+    return `<section class="rp-step"><div class="rp-head"><span class="rp-num" aria-hidden="true">${step}</span><h3>${STEP_NAMES[step]}</h3><span class="rp-chip ok">✓ Completado</span>${step >= STEP.REPORT_PHISH ? `<span class="rp-chip">${tries} ${tries === 1 ? 'intento' : 'intentos'}</span>` : ''}${cleanOf(step) ? '<span class="rp-chip star">★ A la primera</span>' : ''}</div>
       <p class="rp-detail">${detail(step)}</p>
-      ${issues.length ? `<h4>Puntos que tuviste que revisar</h4><ul class="rp-list">${issues.map(([text, count]) => `<li>${esc(text)}${count > 1 ? ` (${veces(count)})` : ''}${step >= 4 ? (last.includes(text) ? ' · <span class="rp-keep">Sigue practicando</span>' : ' · <span class="rp-fixed">✓ Lo corregiste</span>') : ''}</li>`).join('')}</ul>` : '<p class="rp-good">No tuviste nada que corregir.</p>'}
+      ${issues.length ? `<h4>Puntos que tuviste que revisar</h4><ul class="rp-list">${issues.map(([text, count]) => `<li>${esc(text)}${count > 1 ? ` (${veces(count)})` : ''}${step >= STEP.REPLY_SOFIA ? (last.includes(text) ? ' · <span class="rp-keep">Sigue practicando</span>' : ' · <span class="rp-fixed">✓ Lo corregiste</span>') : ''}</li>`).join('')}</ul>` : '<p class="rp-good">No tuviste nada que corregir.</p>'}
       ${helps.length ? `<h4>Ayudas y redirecciones</h4><ul class="rp-list">${helps.map(([text, help]) => `<li>${esc(text)}${help.n > 1 ? ` (${veces(help.n)})` : ''}</li>`).join('')}</ul>` : ''}
     </section>`;
   };
 
   const focusHTML = focus.length
-    ? `<p>Esto es lo que más se repitió en tu práctica. Empieza por los primeros puntos.</p><ol>${focus.map(([key, count], index) => `<li><b>${CATS[key][0]}</b><span class="rp-count">${veces(count)}</span>${index < 3 ? '<span class="rp-prio">Practica primero</span>' : ''}<p>${CATS[key][1]}</p><p class="rp-where">Pasó en: ${[...where[key]].sort().map((step) => `Paso ${step}`).join(', ')}</p></li>`).join('')}</ol>`
+    ? `<p>Esto es lo que más se repitió en tu práctica. Empieza por los primeros puntos.</p><ol>${focus.map(([key, count], index) => `<li><b>${CATEGORIES[key][0]}</b><span class="rp-count">${veces(count)}</span>${index < 3 ? '<span class="rp-prio">Practica primero</span>' : ''}<p>${CATEGORIES[key][1]}</p><p class="rp-where">Pasó en: ${[...where[key]].sort().map((step) => `Paso ${step}`).join(', ')}</p></li>`).join('')}</ol>`
     : '<p><b>¡Felicidades!</b> Hiciste todo sin errores ni ayudas. Repite la práctica cuando quieras para ganar rapidez y confianza.</p>';
 
   $m('m-fb').innerHTML = `<div class="m-fb m-report" role="dialog" aria-modal="true" aria-labelledby="fb-h">
@@ -214,7 +173,7 @@ export function showReport() {
     <section class="rp-focus"><h3>🎯 En qué enfocarte</h3>${focusHTML}</section>
     <h3 style="margin:.4em 0 0">Tus prácticas, paso a paso</h3>
     <p class="m-muted" style="margin:.1em 0 0">Intentos en total (pasos 3 a 7): ${totalTries}</p>
-    ${[1, 2, 3, 4, 5, 6, 7].map(stepHTML).join('')}
+    ${ALL_STEPS.map(stepHTML).join('')}
     </div>
     <div class="fb-actions"><button class="m-big primary" type="button" data-act="report-download">${ic('inbox')}Descargar mi informe</button><button class="m-big" type="button" data-act="report-copy">Copiar informe</button><button class="m-big" type="button" data-act="mission-restart">Empezar de nuevo</button><button class="m-link" type="button" data-act="fb-close">Cerrar</button></div>
     <p class="rp-status" id="rp-status" role="status"></p>

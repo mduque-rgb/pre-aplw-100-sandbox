@@ -31,9 +31,17 @@ Requirements:
 
 - A modern web browser with ES module support.
 - A local static server. Do not open `index.html` using `file://`, as modules may be blocked by the browser.
-- Node.js 20 or higher is recommended for running tests.
+- Node.js 20 or higher is required for the development tools and tests.
 
-Using Python:
+Using Node.js (no extra packages needed):
+
+```bash
+npm start
+```
+
+Then open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+Or using Python:
 
 ```bash
 python3 -m http.server 8000
@@ -75,11 +83,14 @@ These are fictitious, public credentials. Do not enter real credentials.
 
 | Command | Description |
 | --- | --- |
+| `npm start` | Serves the application at http://127.0.0.1:8000 (no dependencies). |
 | `npm test` | Runs domain unit tests using `node:test`. |
+| `npm run test:e2e` | Runs the full seven-step mission in a real browser with Playwright. |
+| `npm run lint` | Checks the code with ESLint. |
 | `npm run typecheck` | Verifies JSDoc types using TypeScript and `checkJs`. |
-| `python3 -m http.server 8000` | Serves the application locally. |
+| `npm run check` | Lint + typecheck + unit tests in one go. |
 
-Tests do not require installing dependencies. `npm run typecheck` uses `npx` to execute TypeScript.
+The app itself has zero runtime dependencies. Run `npm install` once to get the development tools (ESLint, TypeScript, Playwright), and `npx playwright install chromium` before the first end-to-end run.
 
 ## Project Structure
 
@@ -97,14 +108,17 @@ pre-aplw-100-sandbox/
 │   ├── mail/
 │   │   ├── actions/   Email actions
 │   │   ├── data/      Sample emails and attachments
-│   │   ├── domain/    Pure logic: mission, analysis, and state transitions
+│   │   ├── domain/    Pure logic: mission, analysis, issue catalog, state transitions
 │   │   ├── ui/        Inbox rendering and UI components
+│   │   ├── mission-steps.js  Named constants for the seven steps
 │   │   ├── mount.js   Inbox mount point
 │   │   └── state.js   Main email state
 │   ├── shared/        Shared utilities
 │   ├── shell/         Home screen, guide, clock, and icons
 │   └── main.js        Entry point and composition
 ├── tests/             Domain unit tests
+├── e2e/               End-to-end tests (Playwright) and report snapshots
+├── scripts/serve.js   Dependency-free local server
 ├── index.html
 ├── jsconfig.json
 ├── package.json
@@ -117,6 +131,8 @@ pre-aplw-100-sandbox/
 * `js/main.js` connects the core components of the application.
 * The browser and email features are decoupled. The browser notifies login events via a callback without importing the mail module directly.
 * Mission logic, writing analysis, attachment handling, and inbox transitions reside in `js/mail/domain/`.
+* `js/mail/domain/issues.js` is the single catalog of mistakes the practice detects and the report categories they belong to. Add new warnings there, never as loose strings.
+* Steps are referenced by name (`STEP.REPLY_SOFIA`) from `js/mail/mission-steps.js`, not by number.
 * Message and mission state transitions return new data structures instead of mutating existing state.
 * Modules utilize JSDoc with `checkJs` enabled in `jsconfig.json`.
 * Zero frameworks, bundlers, or runtime dependencies.
@@ -124,18 +140,22 @@ pre-aplw-100-sandbox/
 ## Testing
 
 ```bash
-npm test
-npm run typecheck
-
+npm run check      # lint, types, unit tests
+npm run test:e2e   # full mission in a browser
 ```
 
-Tests cover:
+Unit tests cover:
 
 * Email and password validation.
 * Immutable message transitions.
 * Mission state tracking and logging.
 * Writing evaluation rules for Sofía, the manager, and the client.
 * Analysis of subject lines, email bodies, and attachments.
+* The issue catalog: every warning maps to a report category.
+
+End-to-end tests complete the mission on tablet and desktop screens, once perfectly and once with typical mistakes, and compare the final report against snapshots in `e2e/__snapshots__/`. If you change report wording on purpose, update them with `npx playwright test --update-snapshots` and review the diff.
+
+GitHub Actions runs all of the above on every push and pull request (`.github/workflows/ci.yml`).
 
 ## Privacy
 
@@ -148,13 +168,12 @@ Tests cover:
 ## Before Submitting a Pull Request
 
 ```bash
-npm test
-npm run typecheck
-
+npm run check
+npm run test:e2e
 ```
 
 Ensure the complete workflow runs as expected in a browser, and verify that no temporary files, local screenshots, `node_modules`, or `.DS_Store` files were added.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](https://www.google.com/search?q=./LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.

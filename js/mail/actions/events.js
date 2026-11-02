@@ -27,6 +27,7 @@ import {
 import { copyReport, downloadReport, showReport } from './report.js';
 import { resetPractice } from './reset.js';
 import { askSignOut, signOut } from './session.js';
+import { STEP } from '../mission-steps.js';
 
 export function mailClick(event) {
   const target = event.target;
@@ -184,7 +185,7 @@ export function mailClick(event) {
       const message = byId(mail.open);
       openCompose({
         ...replyDraft(message),
-        mission: mail.mission.step === 4 && !mail.mission.done && isSofia(message) ? 'sofia' : '',
+        mission: mail.mission.step === STEP.REPLY_SOFIA && !mail.mission.done && isSofia(message) ? 'sofia' : '',
       });
       break;
     }
@@ -247,7 +248,7 @@ export function mailClick(event) {
     case 'mission-phish': {
       const phish = mail.msgs.find((message) => message.warn);
       if (!phish) break;
-      logHelp(3, 'Pediste ver cuál era el correo falso', 'phish');
+      logHelp(STEP.REPORT_PHISH, 'Pediste ver cuál era el correo falso', 'phish');
       mail.msgs = patchMessage(mail.msgs, phish.id, { unread: false });
       mail.open = phish.id;
       mail.ask = null;
@@ -319,8 +320,8 @@ export function mailClick(event) {
     case 'so-cancel': {
       hideFb();
       const mission = mail.mission;
-      if (mission.step === 7 && !mission.done) {
-        logHelp(7, 'Tocaste “Cancel” en la pregunta “¿Seguro que quieres cerrar sesión?”', '');
+      if (mission.step === STEP.SIGN_OUT && !mission.done) {
+        logHelp(STEP.SIGN_OUT, 'Tocaste “Cancel” en la pregunta “¿Seguro que quieres cerrar sesión?”', '');
         mailToast('No pasa nada. Cuando estés listo, toca “Sign out” otra vez.');
       }
       break;

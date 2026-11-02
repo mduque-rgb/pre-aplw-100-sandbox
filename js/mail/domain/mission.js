@@ -4,6 +4,7 @@ import { DELETE_GOAL, READ_GOAL } from '../mission-goals.js';
 import { mail, phishMsg, sofiaMsg } from '../state.js';
 import { mailToast } from '../ui/toast.js';
 import { updateLog, withHelp, withIssue, withRead, withStep, withTry } from './mission-state.js';
+import { STEP } from '../mission-steps.js';
 
 export const logTry = (step) => {
   mail.mission = withTry(mail.mission, step);
@@ -19,11 +20,11 @@ export const logHelp = (step, text, category) => {
 
 export function missionRead(message) {
   let mission = mail.mission;
-  if (mission.step !== 1 || message.mine || mission.read.has(message.id)) return;
+  if (mission.step !== STEP.READ_NEW || message.mine || mission.read.has(message.id)) return;
 
   mission = withRead(mission, message.id);
   if (mission.read.size >= READ_GOAL) {
-    mission = updateLog(withStep(mission, 2), 1, { tries: 1 });
+    mission = updateLog(withStep(mission, STEP.DELETE_OLD), STEP.READ_NEW, { tries: 1 });
     mail.mission = mission;
     mailToast('¡Paso 1 completado! Toca “Back” para ver el siguiente paso.');
   } else {
@@ -36,18 +37,18 @@ export function missionHTML() {
   const mission = mail.mission;
 
   if (mission.done) {
-    return `<div class="m-mission done"><p><b>¡Práctica completada!</b> Leíste tus correos nuevos, borraste los que no necesitabas, reportaste un correo falso, respondiste a Sofía, le pediste un día libre a tu jefa , le enviaste una factura a un cliente y cerraste tu sesión.</p><button class="m-big primary" type="button" data-act="report">Ver mi informe</button><button class="m-tbtn" type="button" data-act="mission-restart">Empezar de nuevo</button></div>`;
+    return `<div class="m-mission done"><p><b>¡Práctica completada!</b> Leíste tus correos nuevos, borraste los que no necesitabas, reportaste un correo falso, respondiste a Sofía, le pediste un día libre a tu jefa, le enviaste una factura a un cliente y cerraste tu sesión.</p><button class="m-big primary" type="button" data-act="report">Ver mi informe</button><button class="m-tbtn" type="button" data-act="mission-restart">Empezar de nuevo</button></div>`;
   }
 
-  if (mission.step === 1) {
+  if (mission.step === STEP.READ_NEW) {
     return `<div class="m-mission"><p><b>Paso 1 de 7: Lee tus correos nuevos.</b> Los correos que no has leído aparecen en <b>negrita</b>. Toca uno para abrirlo y leerlo, y luego toca “Back” para volver.</p><span class="m-prog">Leídos: ${mission.read.size} de ${READ_GOAL}</span></div>`;
   }
 
-  if (mission.step === 2) {
+  if (mission.step === STEP.DELETE_OLD) {
     return `<div class="m-mission"><p><b>Paso 2 de 7: Borra ${DELETE_GOAL} correos que ya no necesitas.</b> Toca el botón “Delete” en la fila del correo, o ábrelo y toca “Delete”. No borres el de Sofía: ¡lo vas a responder!</p><span class="m-prog">Borrados: ${mission.deleted.size} de ${DELETE_GOAL}</span></div>`;
   }
 
-  if (mission.step === 3) {
+  if (mission.step === STEP.REPORT_PHISH) {
     const phish = phishMsg();
     const where = !phish
       ? 'Ese correo ya no está. Toca “Reset practice inbox” para traerlo de vuelta.'
@@ -64,18 +65,18 @@ export function missionHTML() {
       ? 'Su correo está en la Papelera (Trash), pero puedes abrirlo y responder igual.'
       : 'Ábrelo y toca “Reply” (Responder).';
 
-  if (mission.step === 4) {
+  if (mission.step === STEP.REPLY_SOFIA) {
     return `<div class="m-mission"><p><b>Paso 4 de 7: Responde al correo de Sofía</b> y dile que sí irás a cenar el domingo. ${where}</p>${sofia ? `<button class="m-big primary" type="button" data-act="mission-open">${ic('reply')}Abrir el correo de Sofía</button>` : ''}</div>`;
   }
 
   const signOut = document.querySelector('#mail-app [data-act=signout]');
-  if (signOut) signOut.classList.toggle('hl', mission.step === 7 && !mission.done);
+  if (signOut) signOut.classList.toggle('hl', mission.step === STEP.SIGN_OUT && !mission.done);
 
-  if (mission.step === 7) {
+  if (mission.step === STEP.SIGN_OUT) {
     return '<div class="m-mission"><p><b>Paso 7 de 7: Cierra tu sesión.</b> Cuando termines de usar tu correo, cierra tu sesión (<i>Sign out</i>), sobre todo en una tableta o computadora que usan otras personas. Así nadie más puede leer tus correos. Toca <b>“Sign out”</b> arriba a la derecha y confirma que quieres salir.</p></div>';
   }
 
-  if (mission.step === 5) {
+  if (mission.step === STEP.ASK_DAY_OFF) {
     return `<div class="m-mission"><p><b>Paso 5 de 7: Pide un día libre a tu jefa.</b> Tu jefa es <b>${CONTACTS.boss.name}</b> (${CONTACTS.boss.email}). Toca “Compose” (Redactar) y escribe un correo nuevo con: un asunto claro, un saludo formal, qué día necesitas libre y por qué, y una despedida formal con tu nombre.</p><button class="m-big primary" type="button" data-act="mission-boss">${ic('pencil')}Escribir a mi jefa</button></div>`;
   }
 

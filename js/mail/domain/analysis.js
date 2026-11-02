@@ -1,5 +1,6 @@
 import { esc } from '../../shared/dom.js';
 import { INVOICE } from '../data/attachments.js';
+import { ISSUES } from './issues.js';
 import { fold, writingChecks } from './writing-checks.js';
 
 function attCheck(attachments, mode) {
@@ -11,7 +12,7 @@ function attCheck(attachments, mode) {
   }
 
   if (!list.length) {
-    return [{ ok: false, t: 'Falta el archivo adjunto', d: `Tu correo no lleva la factura. Toca <b>Attach</b> (el clip) y elige <b>${INVOICE}</b>.` }];
+    return [{ ok: false, t: ISSUES.NO_ATTACHMENT.title, d: `Tu correo no lleva la factura. Toca <b>Attach</b> (el clip) y elige <b>${INVOICE}</b>.` }];
   }
 
   const right = list.includes(INVOICE);
@@ -20,7 +21,7 @@ function attCheck(attachments, mode) {
     const other = extra.find((name) => /^Factura_/i.test(name));
     return [{
       ok: false,
-      t: 'Archivo equivocado',
+      t: ISSUES.WRONG_ATTACHMENT.title,
       d: other
         ? `Adjuntaste <b>${esc(other)}</b>, que es la factura de <b>otro cliente</b>. Enviarla sería un error serio, porque tiene datos privados de otra persona. Quítala con la ✕ y adjunta <b>${INVOICE}</b>.`
         : `Adjuntaste <b>${list.map(esc).join(', ')}</b>, pero eso no es la factura. Quítalo con la ✕ y adjunta <b>${INVOICE}</b>.`,
@@ -30,7 +31,7 @@ function attCheck(attachments, mode) {
   if (extra.length) {
     return [{
       ok: false,
-      t: 'Archivos de más',
+      t: ISSUES.EXTRA_ATTACHMENTS.title,
       d: `Adjuntaste la factura correcta, pero también <b>${extra.map(esc).join(', ')}</b>. Envía solo lo que el cliente necesita: quita los demás archivos con la ✕.`,
     }];
   }
@@ -46,15 +47,15 @@ export function analyze(message, kind, own, mode) {
   items.push({ ok: true, t: 'Destinatario', d: `Enviaste el correo a ${esc(message.to)}.` });
 
   if (!subject) {
-    items.push({ ok: false, t: 'Falta el asunto', d: 'Enviaste el correo sin asunto. Recuerda: el asunto es el título del mensaje y ayuda a que lo abran y lo encuentren después.' });
+    items.push({ ok: false, t: ISSUES.NO_SUBJECT.title, d: 'Enviaste el correo sin asunto. Recuerda: el asunto es el título del mensaje y ayuda a que lo abran y lo encuentren después.' });
   } else if (subject.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, '').length >= 4 && subject === subject.toUpperCase()) {
-    items.push({ ok: false, t: 'Asunto en mayúsculas', d: `“${quoted}” está todo en mayúsculas. En un correo parece que estás gritando. Mejor usa mayúsculas solo al principio.` });
+    items.push({ ok: false, t: ISSUES.SUBJECT_ALL_CAPS.title, d: `“${quoted}” está todo en mayúsculas. En un correo parece que estás gritando. Mejor usa mayúsculas solo al principio.` });
   } else if (subject.length > 60) {
-    items.push({ ok: false, t: 'Asunto muy largo', d: 'Tu asunto es largo. Procura que sea breve: unas pocas palabras bastan.' });
+    items.push({ ok: false, t: ISSUES.SUBJECT_TOO_LONG.title, d: 'Tu asunto es largo. Procura que sea breve: unas pocas palabras bastan.' });
   } else if (mode === 'boss' && !/\b(dia|day|dias|days|permiso|libre|off|leave|solicitud|peticion|request|ausencia|vacaciones|vacation)\b/.test(fold(subject))) {
-    items.push({ ok: false, t: 'Asunto poco claro', d: `“${quoted}” no dice de qué trata tu correo. Para tu jefa, un buen asunto es: “Solicitud de día libre – viernes 24”.` });
+    items.push({ ok: false, t: ISSUES.SUBJECT_UNCLEAR.title, d: `“${quoted}” no dice de qué trata tu correo. Para tu jefa, un buen asunto es: “Solicitud de día libre – viernes 24”.` });
   } else if (mode === 'client' && !/\b(factura|invoice|bill)\b/.test(fold(subject))) {
-    items.push({ ok: false, t: 'Asunto poco claro', d: `“${quoted}” no dice de qué trata tu correo. Para un cliente, un buen asunto es: “Factura n.º 1045”.` });
+    items.push({ ok: false, t: ISSUES.SUBJECT_UNCLEAR.title, d: `“${quoted}” no dice de qué trata tu correo. Para un cliente, un buen asunto es: “Factura n.º 1045”.` });
   } else {
     items.push({ ok: true, t: 'Asunto', d: `Escribiste un asunto: “${quoted}”. Así la otra persona sabe de qué trata antes de abrirlo.` });
   }
@@ -67,7 +68,7 @@ export function analyze(message, kind, own, mode) {
   }
 
   if (!own) {
-    items.push({ ok: false, t: 'Mensaje vacío', d: 'Enviaste el correo sin texto. Un mensaje corto explica qué necesitas o qué quieres decir.' });
+    items.push({ ok: false, t: ISSUES.EMPTY_BODY.title, d: 'Enviaste el correo sin texto. Un mensaje corto explica qué necesitas o qué quieres decir.' });
     return { items, req: null };
   }
 

@@ -1,0 +1,11 @@
+No te preocupes, a todos nos pasa.
+
+Sobra un espacio
+
+Hay un espacio en medio del correo.
+
+Qué hacer: Un correo nunca lleva espacios. Borra el espacio señalado con la tecla de borrar.
+
+Debe quedar así:
+nicestudent@gmail.com
+Entendido

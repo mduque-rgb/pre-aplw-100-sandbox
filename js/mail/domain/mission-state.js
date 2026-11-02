@@ -1,12 +1,14 @@
+import { ALL_STEPS, STEP } from '../mission-steps.js';
+
 /** @returns {import('../types.js').MissionState} */
 export function newMission() {
   /** @type {Record<number, import('../types.js').MissionLogEntry>} */
   const log = {};
-  for (let step = 1; step <= 7; step++) {
+  for (const step of ALL_STEPS) {
     log[step] = { tries: 0, issues: {}, helps: {}, last: null };
   }
   return {
-    step: 1,
+    step: STEP.READ_NEW,
     read: new Set(),
     deleted: new Set(),
     done: false,

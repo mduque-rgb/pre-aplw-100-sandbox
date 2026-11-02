@@ -6,15 +6,16 @@ import { withDone } from '../domain/mission-state.js';
 import { mail } from '../state.js';
 import { closeCompose } from '../ui/compose.js';
 import { hideFb } from '../ui/overlay.js';
+import { STEP } from '../mission-steps.js';
 
 export function askSignOut() {
   const mission = mail.mission;
-  if (mission.step === 7 && !mission.done) logTry(7);
+  if (mission.step === STEP.SIGN_OUT && !mission.done) logTry(STEP.SIGN_OUT);
 
   $m('m-fb').innerHTML = `<div class="m-fb" role="alertdialog" aria-modal="true" aria-labelledby="fb-h" aria-describedby="so-d">
     <div class="fb-top"><span class="fb-tick mr-q" aria-hidden="true">?</span><h2 id="fb-h">Are you sure you want to sign out?</h2></div>
     <p class="so-q" id="so-d"><b>¿Seguro que quieres cerrar sesión?</b> Para volver a entrar tendrás que escribir otra vez tu correo y tu contraseña.</p>
-    ${mission.step === 7 && !mission.done ? '<p class="fb-retry"><b>Antes de salir, revisa:</b> ¿terminaste lo que estabas haciendo? Si dejaste un correo a medias, toca “Cancel”. Si ya terminaste, toca “Sign out”.</p>' : ''}
+    ${mission.step === STEP.SIGN_OUT && !mission.done ? '<p class="fb-retry"><b>Antes de salir, revisa:</b> ¿terminaste lo que estabas haciendo? Si dejaste un correo a medias, toca “Cancel”. Si ya terminaste, toca “Sign out”.</p>' : ''}
     <div class="fb-actions"><button class="m-big primary" type="button" data-act="so-confirm">Sign out</button><button class="m-big" type="button" data-act="so-cancel">Cancel</button></div>
   </div>`;
   $m('m-fb').hidden = false;
@@ -23,7 +24,7 @@ export function askSignOut() {
 
 export function signOut() {
   const mission = mail.mission;
-  const isPracticeStep = mission.step === 7 && !mission.done;
+  const isPracticeStep = mission.step === STEP.SIGN_OUT && !mission.done;
   hideFb();
   closeCompose();
 

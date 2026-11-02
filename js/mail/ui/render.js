@@ -12,6 +12,7 @@ import {
   shownDate,
 } from '../state.js';
 import { attChip } from './attachments.js';
+import { STEP } from '../mission-steps.js';
 
 function askHTML() {
   const count = mail.ask.ids.length;
@@ -38,7 +39,7 @@ function emptyText() {
 function quickHTML(message) {
   const button = (action, icon, label, className = '') => `<button class="m-qbtn${className}" type="button" data-act="${action}" data-id="${message.id}" aria-label="${label}: ${esc(message.subject)}" title="${label}">${ic(icon)}<span>${label}</span></button>`;
 
-  let html = '';
+  let html;
   if (message.folder === 'trash') html = button('row-restore', 'restore', 'Restore');
   else if (message.folder === 'spam') html = button('row-notspam', 'inbox', 'Not spam') + button('row-del', 'trash', 'Delete', ' danger');
   else html = button('row-del', 'trash', 'Delete', ' danger') + (message.mine ? '' : button('row-spam', 'spam', 'Report spam', ' warn'));
@@ -101,7 +102,7 @@ function readHTML(message) {
     tools += `<button class="m-tbtn" type="button" data-act="star" data-id="${message.id}">${ic('starred', `st${message.starred ? ' on' : ''}`)}${message.starred ? 'Starred' : 'Star'}</button>`;
   }
 
-  const phishStep = mail.mission.step === 3 && !mail.mission.done && message.warn;
+  const phishStep = mail.mission.step === STEP.REPORT_PHISH && !mail.mission.done && message.warn;
   const safety = (phishStep && message.folder === 'trash')
     ? '<div class="m-mission"><p><b>Paso 3 de 7:</b> este correo falso está en la Papelera. Toca <b>Restore</b> (Restaurar) arriba y luego, desde tu bandeja, ábrelo otra vez y toca <b>Report spam</b>.</p></div>'
     : (phishStep && message.folder !== 'spam')
@@ -112,7 +113,7 @@ function readHTML(message) {
 
   return `<div class="m-tools">${tools}</div>
   <article class="m-msg">
-    ${mail.mission.step === 2 && !mail.mission.done && !message.mine && !isSofia(message) && message.folder !== 'trash' ? '<div class="m-mission"><p><b>Paso 2 de 7:</b> si ya no necesitas este correo, toca <b>Delete</b> (Borrar) arriba.</p></div>' : ''}
+    ${mail.mission.step === STEP.DELETE_OLD && !mail.mission.done && !message.mine && !isSofia(message) && message.folder !== 'trash' ? '<div class="m-mission"><p><b>Paso 2 de 7:</b> si ya no necesitas este correo, toca <b>Delete</b> (Borrar) arriba.</p></div>' : ''}
     <h2 class="m-subject">${esc(message.subject)}</h2>
     <div class="m-meta"><span class="m-av2" style="background:${avColor(message.mine ? 'N' : message.from)}">${esc((message.mine ? 'N' : message.from).charAt(0).toUpperCase())}</span>
       <div><div><b>${esc(message.mine ? 'Me' : message.from)}</b> <span class="m-muted">&lt;${esc(message.addr)}&gt;</span></div>
@@ -120,7 +121,7 @@ function readHTML(message) {
     ${safety}
     <div class="m-text">${esc(message.body)}</div>
     ${message.atts && message.atts.length ? `<div class="m-atts" aria-label="Attachments">${message.atts.map((name) => attChip(name, false)).join('')}</div>` : ''}
-    ${mail.mission.step === 4 && !mail.mission.done && isSofia(message) ? '<div class="m-mission"><p><b>Paso 4 de 7:</b> toca <b>Reply</b> (Responder), aquí abajo, para contestarle a Sofía.</p></div>' : ''}
+    ${mail.mission.step === STEP.REPLY_SOFIA && !mail.mission.done && isSofia(message) ? '<div class="m-mission"><p><b>Paso 4 de 7:</b> toca <b>Reply</b> (Responder), aquí abajo, para contestarle a Sofía.</p></div>' : ''}
     <div class="m-actions"><button class="m-big primary" type="button" data-act="reply">${ic('reply')}Reply</button><button class="m-big" type="button" data-act="forward">${ic('forward')}Forward</button></div>
   </article>`;
 }
