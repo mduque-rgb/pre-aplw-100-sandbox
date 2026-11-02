@@ -18,10 +18,12 @@ export const act = (page, action) => mailApp(page).locator(`[data-act="${action}
  * @param {import('@playwright/test').Page} page
  * @param {string} [path]
  */
-export async function startPractice(page, path = '/') {
+export async function startPractice(page, path = '/?phish=prize') {
   await page.goto(path);
   // The home screen icons are built by the app script: once they exist, the form is wired up.
   await expect(page.locator('#apps .app').first()).toBeAttached();
+  // The app moves focus to the first field shortly after load; wait so typing lands in the right box.
+  await expect(page.locator('#wl-first')).toBeFocused();
   await page.locator('#wl-first').fill('Ana');
   await page.locator('#wl-last').fill('López');
   await page.locator('#wl-form button[type="submit"]').click();

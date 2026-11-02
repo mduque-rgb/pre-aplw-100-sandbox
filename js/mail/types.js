@@ -20,6 +20,7 @@
  * @property {boolean} starred
  * @property {boolean} [mine]
  * @property {boolean} [warn]
+ * @property {string} [phishId]  Which fake email this is (see data/phishing.js).
  * @property {FolderId} [prev]
  * @property {string[]} [atts]
  */

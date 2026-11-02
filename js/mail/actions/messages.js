@@ -1,4 +1,5 @@
 import { $m } from '../../shared/dom.js';
+import { L } from '../../shared/i18n.js';
 import {
   moveMessages as moveMail,
   restoreFolders,
@@ -61,15 +62,15 @@ export function moveMsgs(ids, destination, text) {
 
     if (mission.deleted.size >= DELETE_GOAL) {
       mission = withStep(mission, STEP.REPORT_PHISH);
-      text += '. ¡Paso 2 completado!';
+      text += L('. ¡Paso 2 completado!', '. Step 2 complete!');
       const phish = phishMsg();
       if (phish && phish.folder === 'spam') {
         mission = withStep(mission, STEP.REPLY_SOFIA);
         mission = updateLog(mission, STEP.REPORT_PHISH, { tries: 1, early: true });
-        text += ' Ya habías reportado el correo falso, así que el paso 3 también está listo.';
+        text += L(' Ya habías reportado el correo falso, así que el paso 3 también está listo.', ' You had already reported the fake email, so step 3 is done too.');
       }
     } else if (counted.length) {
-      text += `. Borrados: ${mission.deleted.size} de ${DELETE_GOAL}`;
+      text += L(`. Borrados: ${mission.deleted.size} de ${DELETE_GOAL}`, `. Deleted: ${mission.deleted.size} of ${DELETE_GOAL}`);
     }
   }
 
@@ -102,8 +103,8 @@ export function moveMsgs(ids, destination, text) {
     misreported = new Set(misreported);
     ids.forEach((id) => misreported.delete(id));
     mail.misreported = misreported;
-    text = '¡Bien corregido! El correo volvió a tu bandeja de entrada.';
-    if (!mission.done) mission = withHelp(mission, mission.step, 'Corregiste el error con “Not spam”', '');
+    text = L('¡Bien corregido! El correo volvió a tu bandeja de entrada.', 'Well fixed! The email is back in your inbox.');
+    if (!mission.done) mission = withHelp(mission, mission.step, { es: 'Corregiste el error con “Not spam”', en: 'You fixed the mistake with “Not spam”' }, '');
   }
 
   mail.mission = mission;
@@ -118,7 +119,7 @@ export function moveMsgs(ids, destination, text) {
     if (counted.length) {
       mail.mission = withoutDeleted(mail.mission, counted);
       if (mail.mission.step === STEP.DELETE_OLD) {
-        mail.mission = withHelp(mail.mission, STEP.DELETE_OLD, 'Usaste “Undo” para recuperar un correo borrado', '');
+        mail.mission = withHelp(mail.mission, STEP.DELETE_OLD, { es: 'Usaste “Undo” para recuperar un correo borrado', en: 'You used “Undo” to bring back a deleted email' }, '');
       }
     }
     if (phishDone && mail.mission.step === STEP.REPLY_SOFIA && !mail.mission.done) mail.mission = withStep(mail.mission, STEP.REPORT_PHISH);
@@ -141,7 +142,7 @@ export function moveMsgs(ids, destination, text) {
 
 export function restoreMsgs(ids) {
   if (mail.mission.step === STEP.REPORT_PHISH && !mail.mission.done && ids.some((id) => byId(id).warn)) {
-    mail.mission = withHelp(mail.mission, STEP.REPORT_PHISH, 'Restauraste el correo falso desde la Papelera para poder reportarlo', '');
+    mail.mission = withHelp(mail.mission, STEP.REPORT_PHISH, { es: 'Restauraste el correo falso desde la Papelera para poder reportarlo', en: 'You restored the fake email from the Trash so you could report it' }, '');
   }
 
   mail.msgs = restoreMail(mail.msgs, ids);

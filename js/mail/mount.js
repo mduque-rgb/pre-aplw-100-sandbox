@@ -1,7 +1,9 @@
 import { browserEls } from '../browser/state.js';
 import { esc, $m } from '../shared/dom.js';
+import { L } from '../shared/i18n.js';
 import { ic } from '../shell/icons.js';
 import { mailClick } from './actions/events.js';
+import { saveSoon } from './persist.js';
 import { avColor, mail } from './state.js';
 import { closeCompose } from './ui/compose.js';
 import { hideFb } from './ui/overlay.js';
@@ -18,7 +20,7 @@ export function mountMail(page, address) {
   browserEls.url.value = 'gmail.com/inbox';
   page.className = 'page mailpage';
   page.scrollTop = 0;
-  page.innerHTML = `<div class="m-banner">Practice inbox. Open a message, then try Reply, Forward, or Delete. Nothing is really sent. · Bandeja de práctica: no se envía nada de verdad.</div>
+  page.innerHTML = `<div class="m-banner"><span data-l="es">Bandeja de práctica: abre un mensaje y prueba Reply, Forward o Delete. No se envía nada de verdad.</span><span data-l="en">Practice inbox. Open a message, then try Reply, Forward, or Delete. Nothing is really sent.</span></div>
   <div class="mail-app" id="mail-app">
     <aside class="m-side" id="m-side" aria-label="Folders"></aside>
     <section class="m-main">
@@ -35,6 +37,8 @@ export function mountMail(page, address) {
 
   const root = $m('mail-app');
   root.addEventListener('click', mailClick);
+  // Autosave after every interaction (clicks, keys, typing) so a reload loses nothing.
+  ['click', 'keydown', 'input'].forEach((type) => root.addEventListener(type, saveSoon));
   root.addEventListener('keydown', (event) => {
     const target = /** @type {HTMLElement} */ (event.target);
     if (event.key === 'Enter' && target.classList.contains('m-row')) target.click();
@@ -54,5 +58,5 @@ export function mountMail(page, address) {
 
   drawSide();
   drawMain();
-  mailToast('¡Excelente! Tu correo y tu contraseña son correctos.');
+  mailToast(L('¡Excelente! Tu correo y tu contraseña son correctos.', 'Excellent! Your email and password are correct.'));
 }

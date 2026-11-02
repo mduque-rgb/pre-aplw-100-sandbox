@@ -217,7 +217,11 @@
   .m-qbtn span{display:none}
   .m-qbtn{padding:.4em}
   .m-date{min-width:0}
+  .m-top{flex-wrap:wrap}
+  .m-av{display:none}
 }
+.page.mailpage,.mail-app{overflow-x:clip}
 .m-progress{display:inline-flex;align-items:center;gap:.35em;margin-top:.5em}
 .m-mission .m-replay{font-weight:600;margin:.5em 0 0}
 .rp-replay{margin-top:.5em}
+.m-mission{box-sizing:border-box;max-width:calc(100% - 2em);overflow-wrap:break-word}

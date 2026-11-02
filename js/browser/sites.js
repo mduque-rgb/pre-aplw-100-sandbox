@@ -55,7 +55,7 @@ export const sites = {
     title: 'Sign in',
     cls: 'signin',
     render: () => `
-      <div class="practice-banner" id="signin-banner">Practice page. Nothing you type here is sent anywhere. Practice email / Correo de práctica: <b>nicestudent@gmail.com</b></div>
+      <div class="practice-banner" id="signin-banner"></div>
       <div class="card">
         <div class="logo"><span class="m"><svg viewBox="0 0 48 48"><rect x="6" y="11" width="36" height="26" rx="4" fill="#fff"/><path d="M8 15l16 12 16-12" fill="none" stroke="#2b7ef5" stroke-width="2.5"/></svg></span>Mail</div>
         <h1 id="card-h1">Sign in</h1>
@@ -67,19 +67,19 @@ export const sites = {
             <label for="signin-email" id="signin-label">Email or phone</label>
             <div class="tip" id="signin-tip" role="alert" hidden>
               <span class="tip-arrow" aria-hidden="true"></span>
-              <p class="tip-soft">No te preocupes, a todos nos pasa.</p>
+              <p class="tip-soft"><span data-l="es">No te preocupes, a todos nos pasa.</span><span data-l="en">Don’t worry, it happens to everyone.</span></p>
               <p class="tip-title" id="tip-title"></p>
               <p class="tip-msg" id="tip-msg"></p>
               <p class="tip-fix" id="tip-fix"></p>
               <p class="tip-note" id="tip-note" hidden></p>
-              <div class="tip-example"><span>Debe quedar así:</span><code id="tip-example">nicestudent@gmail.com</code></div>
-              <button type="button" class="tip-ok" id="tip-ok">Entendido</button>
+              <div class="tip-example"><span><span data-l="es">Debe quedar así:</span><span data-l="en">It should look like this:</span></span><code id="tip-example">nicestudent@gmail.com</code></div>
+              <button type="button" class="tip-ok" id="tip-ok"><span data-l="es">Entendido</span><span data-l="en">Got it</span></button>
             </div>
           </div>
           <label class="show-pw" id="show-pw" hidden><input type="checkbox" id="show-pw-box"> Show password</label>
           <div class="pw-hint" id="pw-hint" hidden>
             <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 4 L6 32 H20 V56 H40 V32 H54 Z" fill="#e8232e" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>
-            <p>Toca la casilla “Show password” si necesitas ver lo que estás escribiendo.</p>
+            <p><span data-l="es">Toca la casilla “Show password” si necesitas ver lo que estás escribiendo.</span><span data-l="en">Tick “Show password” if you need to see what you are typing.</span></p>
           </div>
           <div class="err" id="signin-err"></div>
           <div><button type="button" class="link-btn" id="forgot-email">Forgot email?</button></div>

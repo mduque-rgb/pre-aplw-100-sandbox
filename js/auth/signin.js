@@ -1,4 +1,5 @@
 import { esc } from '../shared/dom.js';
+import { L } from '../shared/i18n.js';
 import { TARGET_EMAIL, TARGET_PASSWORD } from './credentials.js';
 import { checkEmail } from './check-email.js';
 import { checkPassword } from './check-password.js';
@@ -10,6 +11,9 @@ function textWidth(input, text) {
   measureCtx.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   return measureCtx.measureText(text).width;
 }
+
+/** Both languages are in the page; CSS shows the active one, so switching is instant. */
+const practiceBanner = (es, en, value) => `<span data-l="es">Página de práctica: nada de lo que escribas se envía. ${es}:</span><span data-l="en">Practice page. Nothing you type here is sent anywhere. ${en}:</span> <b>${esc(value)}</b>`;
 
 export function bindSignin(page, { onAuthenticated, onBack }) {
   const form = page.querySelector('#signin-form');
@@ -41,7 +45,7 @@ export function bindSignin(page, { onAuthenticated, onBack }) {
     if (step === 2) {
       email.type = 'text';
       showPasswordBox.checked = true;
-      note.textContent = 'Mostramos tu contraseña para que puedas ver el error.';
+      note.textContent = L('Mostramos tu contraseña para que puedas ver el error.', 'We are showing your password so you can see the mistake.');
       note.hidden = false;
     } else {
       note.hidden = true;
@@ -49,7 +53,7 @@ export function bindSignin(page, { onAuthenticated, onBack }) {
 
     page.querySelector('#tip-title').textContent = result.t;
     page.querySelector('#tip-msg').textContent = result.m;
-    page.querySelector('#tip-fix').innerHTML = `<strong>Qué hacer:</strong> ${esc(result.f)}`;
+    page.querySelector('#tip-fix').innerHTML = `<strong>${L('Qué hacer:', 'What to do:')}</strong> ${esc(result.f)}`;
     field.classList.add('has-tip');
     tip.hidden = false;
     updateHint();
@@ -88,7 +92,7 @@ export function bindSignin(page, { onAuthenticated, onBack }) {
     showPasswordBox.checked = false;
     showPassword.hidden = false;
     page.querySelector('#tip-example').textContent = TARGET_PASSWORD;
-    banner.innerHTML = `Practice page. Nothing you type here is sent anywhere. Practice password / Contraseña de práctica: <b>${TARGET_PASSWORD}</b>`;
+    banner.innerHTML = practiceBanner('Contraseña de práctica', 'Practice password', TARGET_PASSWORD);
     page.querySelector('#forgot-email').textContent = 'Forgot password?';
     page.querySelector('#create-account').textContent = 'Back';
     page.querySelector('#card-help').textContent = 'Your password stays hidden as you type. Tap “Show password” to check what you typed.';
@@ -130,7 +134,7 @@ export function bindSignin(page, { onAuthenticated, onBack }) {
     if (event.key === 'Escape' && !tip.hidden) hideTip();
   });
 
-  banner.innerHTML = `Practice page. Nothing you type here is sent anywhere. Practice email / Correo de práctica: <b>${TARGET_EMAIL}</b>`;
+  banner.innerHTML = practiceBanner('Correo de práctica', 'Practice email', TARGET_EMAIL);
 
   showPasswordBox.addEventListener('change', () => {
     email.type = showPasswordBox.checked ? 'text' : 'password';
