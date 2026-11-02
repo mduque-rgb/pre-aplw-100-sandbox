@@ -1,4 +1,5 @@
 import { ic } from '../../shell/icons.js';
+import { L } from '../../shared/i18n.js';
 import { CONTACTS } from '../contacts.js';
 import { DELETE_GOAL, READ_GOAL } from '../mission-goals.js';
 import { mail, phishMsg, sofiaMsg } from '../state.js';
@@ -33,7 +34,23 @@ export function missionRead(message) {
   }
 }
 
+/**
+ * Mission box for the inbox. While the practice is not finished it also offers
+ * the progress report, so learners who stop early can still see it.
+ */
 export function missionHTML() {
+  const html = missionBody();
+  const mission = mail.mission;
+  if (mission.done) return html;
+
+  const replayNote = mission.replay
+    ? `<p class="m-replay">${L('Práctica extra: al terminar este paso volverás a donde estabas.', 'Extra practice: when you finish this step you will return to where you were.')}</p>`
+    : '';
+  const progress = `<button class="m-link m-progress" type="button" data-act="report">${ic('starred')}${L('Ver mi avance', 'See my progress')}</button>`;
+  return html.replace(/<\/div>$/, `${replayNote}${progress}</div>`);
+}
+
+function missionBody() {
   const mission = mail.mission;
 
   if (mission.done) {

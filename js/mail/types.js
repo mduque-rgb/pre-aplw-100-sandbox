@@ -44,9 +44,10 @@
  * @typedef {Object} MissionLogEntry
  * @property {number} tries
  * @property {Record<string, number>} issues
- * @property {Record<string, {n: number, cat: string}>} helps
+ * @property {Record<string, {n: number, cat: string, text?: string|{es: string, en: string}}>} helps
  * @property {string[]|null} last
  * @property {boolean} [early]
+ * @property {number} [replays]  Times the learner chose to practise this step again.
  */
 
 /**
@@ -55,6 +56,7 @@
  * @property {Set<number>} read
  * @property {Set<number>} deleted
  * @property {boolean} done
+ * @property {{step: number, returnTo: number, wasDone: boolean}|null} [replay]  Extra practice of a finished step.
  * @property {Record<number, MissionLogEntry>} log
  */
 
@@ -81,6 +83,7 @@
  * @typedef {Object} AnalysisItem
  * @property {boolean} ok
  * @property {boolean} [tip]  Advice that does not block the step.
+ * @property {string} [id]  Issue id from ISSUES when this item is a problem.
  * @property {string} t
  * @property {string} d
  */

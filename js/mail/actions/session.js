@@ -55,3 +55,13 @@ export function signOut() {
   browser.el.tab.textContent = 'Signed out';
   /** @type {HTMLElement} */ (overlay.querySelector('.m-big')).focus();
 }
+
+/** Removes the “signed out” screen so the learner can keep practising in the inbox. */
+export function reopenAfterSignOut() {
+  const overlay = $m('m-out');
+  if (!overlay) return;
+  overlay.remove();
+  const banner = /** @type {HTMLElement|null} */ (browser.el.page.querySelector('.m-banner'));
+  if (banner) banner.hidden = false;
+  browser.el.url.value = 'gmail.com/inbox';
+}

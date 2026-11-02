@@ -1,6 +1,6 @@
 import { esc } from '../../shared/dom.js';
 import { INVOICE } from '../data/attachments.js';
-import { ISSUES } from './issues.js';
+import { issueLabel } from './issues.js';
 import { DATE_RE, fold, writingChecks } from './writing-checks.js';
 
 // Word families, so “Facturas”, “Facturación”, “Ausentarme” or “Solicito” count too.
@@ -24,7 +24,7 @@ function attCheck(attachments, mode) {
   }
 
   if (!list.length) {
-    return [{ ok: false, t: ISSUES.NO_ATTACHMENT.title, d: `Tu correo no lleva la factura. Toca <b>Attach</b> (el clip) y elige <b>${INVOICE}</b>.` }];
+    return [{ ok: false, id: 'NO_ATTACHMENT', t: issueLabel('NO_ATTACHMENT'), d: `Tu correo no lleva la factura. Toca <b>Attach</b> (el clip) y elige <b>${INVOICE}</b>.` }];
   }
 
   const right = list.includes(INVOICE);
@@ -33,7 +33,7 @@ function attCheck(attachments, mode) {
     const other = extra.find((name) => /^Factura_/i.test(name));
     return [{
       ok: false,
-      t: ISSUES.WRONG_ATTACHMENT.title,
+      id: 'WRONG_ATTACHMENT', t: issueLabel('WRONG_ATTACHMENT'),
       d: other
         ? `Adjuntaste <b>${esc(other)}</b>, que es la factura de <b>otro cliente</b>. Enviarla sería un error serio, porque tiene datos privados de otra persona. Quítala con la ✕ y adjunta <b>${INVOICE}</b>.`
         : `Adjuntaste <b>${list.map(esc).join(', ')}</b>, pero eso no es la factura. Quítalo con la ✕ y adjunta <b>${INVOICE}</b>.`,
@@ -43,7 +43,7 @@ function attCheck(attachments, mode) {
   if (extra.length) {
     return [{
       ok: false,
-      t: ISSUES.EXTRA_ATTACHMENTS.title,
+      id: 'EXTRA_ATTACHMENTS', t: issueLabel('EXTRA_ATTACHMENTS'),
       d: `Adjuntaste la factura correcta, pero también <b>${extra.map(esc).join(', ')}</b>. Envía solo lo que el cliente necesita: quita los demás archivos con la ✕.`,
     }];
   }
@@ -59,17 +59,17 @@ export function analyze(message, kind, own, mode) {
   items.push({ ok: true, t: 'Destinatario', d: `Enviaste el correo a ${esc(message.to)}.` });
 
   if (!subject) {
-    items.push({ ok: false, t: ISSUES.NO_SUBJECT.title, d: 'Enviaste el correo sin asunto. Recuerda: el asunto es el título del mensaje y ayuda a que lo abran y lo encuentren después.' });
+    items.push({ ok: false, id: 'NO_SUBJECT', t: issueLabel('NO_SUBJECT'), d: 'Enviaste el correo sin asunto. Recuerda: el asunto es el título del mensaje y ayuda a que lo abran y lo encuentren después.' });
   } else if (subject.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, '').length >= 4 && subject === subject.toUpperCase()) {
-    items.push({ ok: false, t: ISSUES.SUBJECT_ALL_CAPS.title, d: `“${quoted}” está todo en mayúsculas. En un correo parece que estás gritando. Mejor usa mayúsculas solo al principio.` });
+    items.push({ ok: false, id: 'SUBJECT_ALL_CAPS', t: issueLabel('SUBJECT_ALL_CAPS'), d: `“${quoted}” está todo en mayúsculas. En un correo parece que estás gritando. Mejor usa mayúsculas solo al principio.` });
   } else if (subject.length > 60) {
-    items.push({ ok: false, t: ISSUES.SUBJECT_TOO_LONG.title, d: 'Tu asunto es largo. Procura que sea breve: unas pocas palabras bastan.' });
+    items.push({ ok: false, id: 'SUBJECT_TOO_LONG', t: issueLabel('SUBJECT_TOO_LONG'), d: 'Tu asunto es largo. Procura que sea breve: unas pocas palabras bastan.' });
   } else if (!subjectIsClear(subject, mode)) {
     // A tip, not a blocker: the learner can finish the step and still sees how to improve.
     items.push({
       ok: true,
       tip: true,
-      t: ISSUES.SUBJECT_UNCLEAR.title,
+      id: 'SUBJECT_UNCLEAR', t: issueLabel('SUBJECT_UNCLEAR'),
       d: mode === 'boss'
         ? `“${quoted}” podría ser más claro. Para tu jefa, un buen asunto dice qué pides, por ejemplo: “Solicitud de día libre – viernes 24”.`
         : `“${quoted}” podría ser más claro. Para un cliente, un buen asunto menciona la factura, por ejemplo: “Factura n.º 1045”.`,
@@ -86,7 +86,7 @@ export function analyze(message, kind, own, mode) {
   }
 
   if (!own) {
-    items.push({ ok: false, t: ISSUES.EMPTY_BODY.title, d: 'Enviaste el correo sin texto. Un mensaje corto explica qué necesitas o qué quieres decir.' });
+    items.push({ ok: false, id: 'EMPTY_BODY', t: issueLabel('EMPTY_BODY'), d: 'Enviaste el correo sin texto. Un mensaje corto explica qué necesitas o qué quieres decir.' });
     return { items, req: null };
   }
 

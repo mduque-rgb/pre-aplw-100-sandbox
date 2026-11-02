@@ -7,6 +7,9 @@ import {
   withDone,
   withHelp,
   withIssue,
+  withReplay,
+  finishReplay,
+  canReplay,
   withRead,
   withStep,
   withTry,
@@ -71,5 +74,35 @@ test('withTry, withIssue and withHelp build on previous entries', () => {
 
   assert.equal(mission.log[3].tries, 1);
   assert.equal(mission.log[3].issues['Falta el asunto'], 1);
-  assert.deepEqual(mission.log[3].helps['Pediste ayuda'], { n: 1, cat: 'subject' });
+  assert.deepEqual(mission.log[3].helps['Pediste ayuda'], { n: 1, cat: 'subject', text: 'Pediste ayuda' });
+});
+
+test('withHelp keeps bilingual text and uses the Spanish text as key', () => {
+  const mission = withHelp(newMission(), 2, { es: 'Usaste Undo', en: 'You used Undo' }, '');
+  assert.deepEqual(mission.log[2].helps['Usaste Undo'].text, { es: 'Usaste Undo', en: 'You used Undo' });
+});
+
+test('a finished writing step can be practised again and then returns to where it was', () => {
+  const finished = withDone(withStep(newMission(), 7));
+  assert.equal(canReplay(finished, 5), true);
+  assert.equal(canReplay(finished, 2), false, 'inbox steps are not replayable');
+
+  const replay = withReplay(finished, 5);
+  assert.equal(replay.step, 5);
+  assert.equal(replay.done, false);
+  assert.equal(replay.log[5].replays, 1);
+  assert.equal(canReplay(replay, 4), false, 'only one extra practice at a time');
+
+  const back = finishReplay(replay);
+  assert.equal(back.step, 7);
+  assert.equal(back.done, true);
+  assert.equal(back.replay, null);
+});
+
+test('a step that is not finished yet cannot be replayed', () => {
+  const mission = withStep(newMission(), 5);
+  assert.equal(canReplay(mission, 5), false);
+  assert.equal(canReplay(mission, 6), false);
+  assert.equal(canReplay(mission, 4), true);
+  assert.equal(withReplay(mission, 6), mission);
 });

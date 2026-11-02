@@ -3,7 +3,8 @@ import { ic } from '../../shell/icons.js';
 import { CONTACTS } from '../contacts.js';
 import { INVOICE } from '../data/attachments.js';
 import { analyze, listEs } from '../domain/analysis.js';
-import { updateLog, withHelp, withIssue, withStep, withTry } from '../domain/mission-state.js';
+import { finishReplay, updateLog, withHelp, withIssue, withStep, withTry } from '../domain/mission-state.js';
+import { L } from '../../shared/i18n.js';
 import { fold } from '../domain/writing-checks.js';
 import { mail, sofiaMsg } from '../state.js';
 import { drawMain } from './render.js';
@@ -117,9 +118,21 @@ export function showFeedback(message, kind, own) {
     retry = `La dirección no es exactamente la de tu cliente. Escribiste “${esc(message.to)}”, pero debe ser “${CONTACTS.client.email}”. Toca <b>Intentarlo nuevamente</b> y compárala letra por letra.`;
   }
 
+  // Extra practice of a finished step: go back to where the learner was instead of advancing.
+  if (next && mission.replay) {
+    const { wasDone } = mission.replay;
+    mission = finishReplay(mission);
+    mail.mission = mission;
+    next = wasDone ? 0 : mission.step;
+    done = L(
+      '<b>¡Muy bien!</b> Completaste otra vez este paso. Tu informe ya incluye esta práctica.',
+      '<b>Well done!</b> You completed this step again. Your report now includes this practice.',
+    );
+  }
+
   if (context) {
     // Tips are logged so the report can mention them, but they never block the step.
-    const warnings = items.filter((item) => !item.ok || item.tip).map((item) => item.t);
+    const warnings = items.filter((item) => !item.ok || item.tip).map((item) => item.id || item.t);
     mission = withTry(mission, context);
     warnings.forEach((warning) => {
       mission = withIssue(mission, context, warning);

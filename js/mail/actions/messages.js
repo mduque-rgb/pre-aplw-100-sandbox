@@ -53,10 +53,10 @@ export function moveMsgs(ids, destination, text) {
     mission = withDeleted(mission, counted);
     if (counted.length) mission = withTry(mission, STEP.DELETE_OLD);
     if (counted.some((id) => isSofia(byId(id)))) {
-      mission = withIssue(mission, STEP.DELETE_OLD, ISSUES.DELETED_SOFIA.title);
+      mission = withIssue(mission, STEP.DELETE_OLD, ISSUES.DELETED_SOFIA.id);
     }
     if (counted.some((id) => byId(id).warn)) {
-      mission = withIssue(mission, STEP.DELETE_OLD, ISSUES.DELETED_PHISH.title);
+      mission = withIssue(mission, STEP.DELETE_OLD, ISSUES.DELETED_PHISH.id);
     }
 
     if (mission.deleted.size >= DELETE_GOAL) {
@@ -95,7 +95,7 @@ export function moveMsgs(ids, destination, text) {
     legitimate.forEach((id) => misreported.add(id));
     mail.misreported = misreported;
     text = 'Reported as spam';
-    if (!mission.done) mission = withIssue(mission, mission.step, ISSUES.REPORTED_REAL_MAIL.title);
+    if (!mission.done) mission = withIssue(mission, mission.step, ISSUES.REPORTED_REAL_MAIL.id);
   }
 
   if (destination === 'inbox' && ids.some((id) => misreported.has(id))) {

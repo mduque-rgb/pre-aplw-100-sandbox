@@ -218,3 +218,6 @@
   .m-qbtn{padding:.4em}
   .m-date{min-width:0}
 }
+.m-progress{display:inline-flex;align-items:center;gap:.35em;margin-top:.5em}
+.m-mission .m-replay{font-weight:600;margin:.5em 0 0}
+.rp-replay{margin-top:.5em}

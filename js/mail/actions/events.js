@@ -25,8 +25,10 @@ import {
   restoreMsgs,
 } from './messages.js';
 import { copyReport, downloadReport, showReport } from './report.js';
+import { withReplay } from '../domain/mission-state.js';
+import { L } from '../../shared/i18n.js';
 import { resetPractice } from './reset.js';
-import { askSignOut, signOut } from './session.js';
+import { askSignOut, reopenAfterSignOut, signOut } from './session.js';
 import { STEP } from '../mission-steps.js';
 
 export function mailClick(event) {
@@ -273,6 +275,15 @@ export function mailClick(event) {
     case 'report':
       showReport();
       break;
+    case 'report-replay': {
+      const step = Number(element.dataset.step);
+      mail.mission = withReplay(mail.mission, step);
+      hideFb();
+      reopenAfterSignOut();
+      goFolder('inbox');
+      mailToast(L(`Práctica extra del paso ${step}. Al terminar, volverás a donde estabas.`, `Extra practice of step ${step}. When you finish, you will return to where you were.`));
+      break;
+    }
     case 'report-download':
       downloadReport();
       break;
