@@ -31,6 +31,37 @@ import { resetPractice } from './reset.js';
 import { askSignOut, reopenAfterSignOut, signOut } from './session.js';
 import { STEP } from '../mission-steps.js';
 
+/**
+ * Closes the report and puts the learner back on their current step: the inbox
+ * with the step box highlighted. With `goToStep`, it also opens what the step
+ * needs next (Sofía's email, a new email to the manager or client, Sign out).
+ * @param {boolean} goToStep
+ */
+export function closeReport(goToStep) {
+  hideFb();
+  const mission = mail.mission;
+  if (mission.done) return;
+
+  if (!$m('m-compose').hidden) closeCompose();
+  goFolder('inbox');
+  const box = /** @type {HTMLElement|null} */ (document.querySelector('#m-body .m-mission'));
+  if (!box) return;
+  box.classList.add('m-flash');
+  box.scrollIntoView({ block: 'nearest' });
+
+  const stepAction = /** @type {HTMLElement|null} */ (box.querySelector('[data-act="mission-open"],[data-act="mission-boss"],[data-act="mission-client"]'));
+  if (goToStep && stepAction) {
+    stepAction.click();
+    return;
+  }
+  if (mission.step === STEP.SIGN_OUT) {
+    const signOutButton = /** @type {HTMLElement|null} */ (document.querySelector('#mail-app [data-act="signout"]'));
+    signOutButton?.focus();
+    return;
+  }
+  (stepAction || /** @type {HTMLElement|null} */ (box.querySelector('button')))?.focus({ preventScroll: true });
+}
+
 export function mailClick(event) {
   const target = event.target;
   if (target.closest('.m-chk') && !target.matches('input')) return;
@@ -274,6 +305,12 @@ export function mailClick(event) {
       break;
     case 'report':
       showReport();
+      break;
+    case 'report-close':
+      closeReport(false);
+      break;
+    case 'report-continue':
+      closeReport(true);
       break;
     case 'report-replay': {
       const step = Number(element.dataset.step);

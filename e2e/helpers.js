@@ -101,19 +101,19 @@ export const CLIENT_OK = 'Estimado Carlos:\n\nLe adjunto la factura n.º 1045.\n
 
 /** Steps 1–3: read three messages, delete two, report the phishing email. */
 export async function doInboxSteps(page) {
-  for (const subject of ['Reminder: Email basics class tonight', 'Your free garden plot is ready', 'Appointment reminder for Thursday']) {
+  for (const subject of ['Recordatorio: clase de correo electrónico esta noche', 'Tu parcela gratis del huerto está lista', 'Recordatorio de tu cita del jueves']) {
     await openMessage(page, subject);
     await act(page, 'back');
   }
   await expect(page.locator('.m-mission')).toContainText('Paso 2 de 7');
 
-  for (const subject of ['This morning\'s headlines', 'Showers expected on Thursday']) {
+  for (const subject of ['Los titulares de esta mañana', 'Se esperan lluvias el jueves']) {
     await openMessage(page, subject);
     await act(page, 'del');
   }
   await expect(page.locator('.m-mission')).toContainText('Paso 3 de 7');
 
-  await openMessage(page, 'YOU WON a $500 gift card!!! Claim today');
+  await openMessage(page, '¡¡¡GANASTE una tarjeta de regalo de $500!!! Reclámala hoy');
   await act(page, 'spam');
   await page.getByRole('checkbox', { name: 'Tiene prisa o una fecha límite' }).check();
   await page.getByRole('checkbox', { name: 'Creo que me pide información personal' }).check();

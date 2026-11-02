@@ -2,7 +2,8 @@ import { browserEls } from '../browser/state.js';
 import { esc, $m } from '../shared/dom.js';
 import { L } from '../shared/i18n.js';
 import { ic } from '../shell/icons.js';
-import { mailClick } from './actions/events.js';
+import { closeReport, mailClick } from './actions/events.js';
+import { reportIsOpen } from './actions/report.js';
 import { saveSoon } from './persist.js';
 import { avColor, mail } from './state.js';
 import { closeCompose } from './ui/compose.js';
@@ -43,7 +44,8 @@ export function mountMail(page, address) {
     const target = /** @type {HTMLElement} */ (event.target);
     if (event.key === 'Enter' && target.classList.contains('m-row')) target.click();
     if (event.key === 'Escape') {
-      if (!$m('m-fb').hidden) hideFb();
+      if (reportIsOpen()) closeReport(false);
+      else if (!$m('m-fb').hidden) hideFb();
       else if (!$m('m-compose').hidden) closeCompose();
     }
   });
