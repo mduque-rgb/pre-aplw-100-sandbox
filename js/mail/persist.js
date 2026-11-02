@@ -4,6 +4,7 @@
  * the practice is often done on shared devices, such as library tablets.
  */
 import { learner } from '../learner/state.js';
+import { localizeMessages } from './data/sample-mail.js';
 import { mail } from './state.js';
 
 const KEY = 'practice.progress.v1';
@@ -77,7 +78,8 @@ export function loadProgress() {
 export function restoreProgress(saved) {
   learner.first = saved.learner.first;
   learner.last = saved.learner.last;
-  mail.msgs = saved.msgs;
+  // Saved in one language, shown in the one chosen now.
+  mail.msgs = localizeMessages(saved.msgs);
   mail.nextId = saved.nextId;
   mail.misreported = new Set(saved.misreported);
   mail.mission = {

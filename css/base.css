@@ -92,3 +92,15 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);displ
 /* Larger text can make content wider than the screen; clip it instead of letting focus scroll the whole screen sideways. */
 .screen,.layer{overflow:clip}
 .toolbar .address{min-width:0}
+
+/* Large screens: the tablet fills the space left by the reading bar instead of stopping at 980px.
+   It keeps a tablet-like shape (up to 16:9) and the text grows with it. */
+@media (min-width:761px) and (min-height:521px){
+  body{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);justify-items:center;align-items:center;gap:10px;padding-block:12px}
+  .topbar{flex-direction:row;justify-content:space-between;flex-wrap:wrap;width:100%;max-width:min(100%,calc((100dvh - 90px) * 1.78))}
+  .hint{text-align:left;flex:1 1 20em}
+  .tablet{container-type:size;width:min(100%,calc((100dvh - 90px) * 1.78));height:100%;max-height:calc(100dvh - 90px);aspect-ratio:auto;padding:12px;border-radius:26px}
+  .tablet::before{top:3px;width:6px;height:6px}
+  .screen{border-radius:14px;font-size:calc(clamp(11px,1.15cqw,19px) * var(--text-scale))}
+  .layer{border-radius:14px}
+}

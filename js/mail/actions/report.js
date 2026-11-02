@@ -261,30 +261,34 @@ export function showReport() {
       `${name ? `${name}, you` : 'You'} reached step ${mission.step} of ${total}. This report shows what you have done so far. You can close it and keep practising whenever you like.`,
     );
 
+  const continueLabel = L(`Continuar con el paso ${mission.step}`, `Continue with step ${mission.step}`);
   const actions = finished
-    ? `<button class="m-big primary" type="button" data-act="report-download">${ic('inbox')}${L('Descargar mi informe', 'Download my report')}</button><button class="m-big" type="button" data-act="report-copy">${L('Copiar informe', 'Copy report')}</button><button class="m-big" type="button" data-act="mission-restart">${L('Empezar de nuevo', 'Start over')}</button><button class="m-link" type="button" data-act="fb-close">${L('Cerrar', 'Close')}</button>`
-    : `<button class="m-big primary" type="button" data-act="fb-close">${L('Seguir practicando', 'Keep practising')}</button><button class="m-big" type="button" data-act="report-download">${ic('inbox')}${L('Descargar mi informe', 'Download my report')}</button><button class="m-big" type="button" data-act="report-copy">${L('Copiar informe', 'Copy report')}</button>`;
+    ? `<button class="m-big primary" type="button" data-act="report-download">${ic('inbox')}${L('Descargar mi informe', 'Download my report')}</button><button class="m-big" type="button" data-act="report-copy">${L('Copiar informe', 'Copy report')}</button><button class="m-big" type="button" data-act="mission-restart">${L('Empezar de nuevo', 'Start over')}</button>`
+    : `<button class="m-big primary" type="button" data-act="report-continue">${continueLabel} →</button><button class="m-big" type="button" data-act="report-download">${ic('inbox')}${L('Descargar mi informe', 'Download my report')}</button><button class="m-big" type="button" data-act="report-copy">${L('Copiar informe', 'Copy report')}</button>`;
 
+  // Full screen inside the tablet: fixed title bar with a close button, scrolling content, fixed action bar.
   $m('m-fb').innerHTML = `<div class="m-fb m-report" role="dialog" aria-modal="true" aria-labelledby="fb-h">
-    <div class="fb-top"><span class="fb-tick" aria-hidden="true">${ic('starred')}</span><h2 id="fb-h">${finished ? L('Tu informe de práctica', 'Your practice report') : L('Tu informe de avance', 'Your progress report')}</h2></div>
-    <div class="rp-body">
+    <header class="rp-bar"><span class="fb-tick" aria-hidden="true">${ic('starred')}</span><h2 id="fb-h">${finished ? L('Tu informe de práctica', 'Your practice report') : L('Tu informe de avance', 'Your progress report')}</h2><button class="rp-x" type="button" data-act="report-close" aria-label="${L('Cerrar el informe', 'Close the report')}" title="${L('Cerrar', 'Close')}">${ic('x')}</button></header>
+    <div class="rp-scroll"><div class="rp-body">
     <p class="rp-who"><b>${L('Nombre', 'Name')}:</b> ${esc(learnerName() || L('Sin nombre', 'No name'))} · <b>${L('Fecha', 'Date')}:</b> ${reportDate()}</p>
     <p class="fb-sum">${summary}</p>
     <div class="rp-stats"><div class="rp-stat"><b>${completed} ${L('de', 'of')} ${total}</b>${L('prácticas completadas', 'practices completed')}</div><div class="rp-stat"><b>${clean} ${L('de', 'of')} ${total}</b>${L('a la primera', 'on the first try')}</div><div class="rp-stat"><b>${helpsN}</b>${helpsN === 1 ? L('aviso o ayuda', 'hint or help') : L('avisos o ayudas', 'hints or help')}</div></div>
     <section class="rp-focus"><h3>🎯 ${L('En qué enfocarte', 'What to focus on')}</h3>${focusHTML}</section>
     <h3 style="margin:.4em 0 0">${L('Tus prácticas, paso a paso', 'Your practices, step by step')}</h3>
     <p class="m-muted" style="margin:.1em 0 0">${L('Intentos en total (pasos 3 a 7)', 'Total tries (steps 3 to 7)')}: ${totalTries}</p>
-    ${ALL_STEPS.map(stepHTML).join('')}
-    </div>
-    <div class="fb-actions">${actions}</div>
-    <p class="rp-status" id="rp-status" role="status"></p>
+    <div class="rp-steps">${ALL_STEPS.map(stepHTML).join('')}</div>
+    </div></div>
+    <footer class="rp-foot"><div class="fb-actions">${actions}</div><p class="rp-status" id="rp-status" role="status"></p></footer>
   </div>`;
   $m('m-fb').hidden = false;
-  /** @type {HTMLElement} */ ($m('m-fb').querySelector('.m-fb')).scrollTop = 0;
-  /** @type {HTMLElement} */ ($m('m-fb').querySelector('.m-big')).focus({ preventScroll: true });
+  /** @type {HTMLElement} */ ($m('m-fb').querySelector('.rp-scroll')).scrollTop = 0;
+  /** @type {HTMLElement} */ ($m('m-fb').querySelector('.rp-x')).focus({ preventScroll: true });
 }
+
+/** True while the report is on screen. */
+export const reportIsOpen = () => Boolean($m('m-fb') && !$m('m-fb').hidden && $m('m-fb').querySelector('.m-report'));
 
 /** Re-renders the report if it is open, e.g. after the language changes. */
 export function refreshReport() {
-  if ($m('m-fb') && $m('m-fb').querySelector('.m-report')) showReport();
+  if (reportIsOpen()) showReport();
 }

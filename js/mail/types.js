@@ -20,6 +20,7 @@
  * @property {boolean} starred
  * @property {boolean} [mine]
  * @property {boolean} [warn]
+ * @property {{from: string|{es: string, en: string}, subject: string|{es: string, en: string}, body: string|{es: string, en: string}}} [i18n]  Both language versions of a practice email.
  * @property {string} [phishId]  Which fake email this is (see data/phishing.js).
  * @property {FolderId} [prev]
  * @property {string[]} [atts]

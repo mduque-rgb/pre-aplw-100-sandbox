@@ -6,6 +6,7 @@ import { newMission } from './mail/domain/mission-state.js';
 import { STEP } from './mail/mission-steps.js';
 import { mountMail } from './mail/mount.js';
 import { bindAutosave, clearProgress, loadProgress, restoreProgress, saveProgress, saveSoon } from './mail/persist.js';
+import { localizeMessages } from './mail/data/sample-mail.js';
 import { freshInbox, mail } from './mail/state.js';
 import { refreshComposeMission } from './mail/ui/compose.js';
 import { drawMain, drawSide } from './mail/ui/render.js';
@@ -48,8 +49,9 @@ bindWelcome({
   },
 });
 
-// Instructions change language in place; the open inbox, report and compose box are redrawn.
+// Practice emails and instructions change language in place; the open inbox, report and compose box are redrawn.
 onLangChange(() => {
+  mail.msgs = localizeMessages(mail.msgs);
   if (!$m('mail-app')) return;
   drawSide();
   drawMain();

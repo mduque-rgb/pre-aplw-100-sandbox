@@ -9,7 +9,7 @@ import {
 } from './helpers.js';
 
 const readThree = async (page) => {
-  for (const subject of ['Reminder: Email basics class tonight', 'Your free garden plot is ready', 'Appointment reminder for Thursday']) {
+  for (const subject of ['Recordatorio: clase de correo electrónico esta noche', 'Tu parcela gratis del huerto está lista', 'Recordatorio de tu cita del jueves']) {
     await openMessage(page, subject);
     await act(page, 'back');
   }
@@ -27,7 +27,7 @@ test('idioma: las instrucciones cambian a inglés y vuelven a español al instan
 
   await page.locator('.m-mission [data-act="report"]').click();
   await expect(page.locator('#fb-h')).toHaveText('Your progress report');
-  await act(page, 'fb-close');
+  await page.locator('.rp-x').click();
 
   await page.locator('[data-set-lang="es"]').click();
   await expect(page.locator('.m-mission')).toContainText('Paso 1 de 7');
@@ -121,8 +121,8 @@ test('correos falsos distintos: el del banco tiene sus propias pistas', async ({
   await page.locator('#signin-email').fill('L3arn7inG2026!');
   await page.locator('#signin-email').press('Enter');
 
-  await expect(page.locator('.m-row', { hasText: 'Prize Center' })).toHaveCount(0);
-  await openMessage(page, 'URGENT: Your account has been LOCKED');
+  await expect(page.locator('.m-row', { hasText: 'Centro de Premios' })).toHaveCount(0);
+  await openMessage(page, 'URGENTE: Tu cuenta ha sido BLOQUEADA');
   await act(page, 'spam');
   await page.getByRole('checkbox', { name: 'Creo que me pide información personal' }).check();
   await act(page, 'mr-next');
@@ -146,4 +146,15 @@ test('cerrar el navegador sin cerrar sesión aparece en “En qué enfocarte”'
 
   await page.locator('.m-mission [data-act="report"]').click();
   await expect(page.locator('.rp-focus')).toContainText('Cerrar tu sesión');
+});
+
+test('idioma: los correos de la bandeja también cambian de idioma', async ({ page }) => {
+  await signIn(page);
+  await expect(page.locator('.m-row', { hasText: 'Fotos del fin de semana' })).toBeVisible();
+  await page.locator('[data-set-lang="en"]').click();
+  await expect(page.locator('.m-row', { hasText: 'Photos from the weekend' })).toBeVisible();
+  await openMessage(page, 'Photos from the weekend');
+  await expect(page.locator('.m-text')).toContainText('Do you want to come over for dinner on Sunday?');
+  await page.locator('[data-set-lang="es"]').click();
+  await expect(page.locator('.m-text')).toContainText('¿Quieres venir a cenar el domingo?');
 });

@@ -9,7 +9,7 @@ The project lives in the `pre-aplw-100-sandbox` directory.
 
 This application is designed for people learning how to use email for the first time. Everything takes place within a simulated tablet using practice data: no actual emails are sent, and no information is transmitted to any server.
 
-Instructions, tips and the report can be shown in **Spanish or English** (switch above the tablet). The simulated Gmail always keeps its English labels (`Inbox`, `Compose`, `Reply`, `Sign out`, etc.) so students get used to the vocabulary of the real app.
+Instructions, tips, the report and the practice emails themselves can be shown in **Spanish or English** (switch above the tablet). The simulated Gmail always keeps its English labels (`Inbox`, `Compose`, `Reply`, `Sign out`, etc.) so students get used to the vocabulary of the real app.
 
 ## Features
 
@@ -18,14 +18,14 @@ Instructions, tips and the report can be shown in **Spanish or English** (switch
 - Simulated login with detailed hints to correct email address and password entries.
 - Inbox with folders, search, read/unread emails, stars, and attachments.
 - Email actions: reply, forward, compose, delete, restore, mark as spam, undo, and empty trash.
-- Seven-step guided mission with visible progress tracking and a **“See my progress”** report available at any moment, so learners who stop early still get one.
+- Seven-step guided mission with visible progress tracking and a **“See my progress”** report available at any moment, so learners who stop early still get one. The report fills the tablet screen, with a close button (✕) that returns to the current step and a “Continue with step N” button that opens what the step needs next.
 - Finished writing steps (4–6) can be **practised again** from the report.
 - Writing feedback: greeting, subject line, sign-off, clarity, politeness, date, purpose, attachments, spacing, and overly long sentences. A vague subject is shown as a tip and never blocks a step.
 - Three different phishing emails (prize, bank, parcel), one per practice, each with its own warning signs. Add `?phish=prize|bank|package` to the address to choose one.
 - Final report with statistics, areas for improvement, HTML download, copy-to-clipboard option, and a reset feature.
 - Reading options: instructions language (Español/English), text size (100–150 %) and **Listen**, which reads the current instruction aloud with the browser's voice.
 - Progress is saved in the browser, so a reload does not lose the practice.
-- Works on tablets, computers and phones (on phones the tablet frame is dropped to use the whole screen).
+- Works on tablets, computers and phones: on large screens the tablet grows to fill the window (up to 16:9) and its text grows with it; on phones the tablet frame is dropped to use the whole screen.
 - Keyboard navigation and accessible announcements using `aria-live` and focus management; messages stay on screen according to their length and pause while hovered or focused.
 
 ## How to Run
