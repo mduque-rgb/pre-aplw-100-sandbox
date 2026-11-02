@@ -12,6 +12,7 @@ export function newMission() {
     read: new Set(),
     deleted: new Set(),
     done: false,
+    replay: null,
     log,
   };
 }
@@ -102,15 +103,58 @@ export function withIssue(mission, step, text) {
 }
 
 /**
+ * Logs a hint or help. `text` may be bilingual ({es, en}); the Spanish text is the log key.
  * @param {import('../types.js').MissionState} mission
  * @param {number} step
- * @param {string} text
+ * @param {string|{es: string, en: string}} text
  * @param {string} category
  * @returns {import('../types.js').MissionState}
  */
 export function withHelp(mission, step, text, category) {
+  const key = typeof text === 'string' ? text : text.es;
   return updateLog(mission, step, (entry) => {
-    const help = entry.helps[text] || { n: 0, cat: category };
-    return { helps: { ...entry.helps, [text]: { ...help, n: help.n + 1 } } };
+    const help = entry.helps[key] || { n: 0, cat: category, text };
+    return { helps: { ...entry.helps, [key]: { ...help, n: help.n + 1 } } };
   });
+}
+
+/** Steps that can be practised again from the report: the three writing steps. */
+/** @type {readonly number[]} */
+export const REPLAYABLE_STEPS = Object.freeze([STEP.REPLY_SOFIA, STEP.ASK_DAY_OFF, STEP.SEND_INVOICE]);
+
+/**
+ * True when the learner has finished `step` and can practise it again.
+ * @param {import('../types.js').MissionState} mission
+ * @param {number} step
+ */
+export function canReplay(mission, step) {
+  return REPLAYABLE_STEPS.includes(step) && !mission.replay && (mission.done || step < mission.step);
+}
+
+/**
+ * Sends the learner back to an already finished step, remembering where to return.
+ * @param {import('../types.js').MissionState} mission
+ * @param {number} step
+ * @returns {import('../types.js').MissionState}
+ */
+export function withReplay(mission, step) {
+  if (!canReplay(mission, step)) return mission;
+  const replayed = updateLog(mission, step, (entry) => ({ replays: (entry.replays || 0) + 1 }));
+  return {
+    ...replayed,
+    step,
+    done: false,
+    replay: { step, returnTo: mission.step, wasDone: mission.done },
+  };
+}
+
+/**
+ * Ends an extra practice and puts the learner back where they were.
+ * @param {import('../types.js').MissionState} mission
+ * @returns {import('../types.js').MissionState}
+ */
+export function finishReplay(mission) {
+  if (!mission.replay) return mission;
+  const { returnTo, wasDone } = mission.replay;
+  return { ...mission, step: returnTo, done: wasDone, replay: null };
 }

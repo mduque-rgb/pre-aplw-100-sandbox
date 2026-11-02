@@ -25,8 +25,10 @@ import {
   restoreMsgs,
 } from './messages.js';
 import { copyReport, downloadReport, showReport } from './report.js';
+import { withReplay } from '../domain/mission-state.js';
+import { L } from '../../shared/i18n.js';
 import { resetPractice } from './reset.js';
-import { askSignOut, signOut } from './session.js';
+import { askSignOut, reopenAfterSignOut, signOut } from './session.js';
 import { STEP } from '../mission-steps.js';
 
 export function mailClick(event) {
@@ -248,7 +250,7 @@ export function mailClick(event) {
     case 'mission-phish': {
       const phish = mail.msgs.find((message) => message.warn);
       if (!phish) break;
-      logHelp(STEP.REPORT_PHISH, 'Pediste ver cuál era el correo falso', 'phish');
+      logHelp(STEP.REPORT_PHISH, { es: 'Pediste ver cuál era el correo falso', en: 'You asked to see which email was fake' }, 'phish');
       mail.msgs = patchMessage(mail.msgs, phish.id, { unread: false });
       mail.open = phish.id;
       mail.ask = null;
@@ -268,11 +270,20 @@ export function mailClick(event) {
     }
     case 'mission-restart':
       hideFb();
-      resetPractice('Práctica reiniciada');
+      resetPractice(L('Práctica reiniciada', 'Practice restarted'));
       break;
     case 'report':
       showReport();
       break;
+    case 'report-replay': {
+      const step = Number(element.dataset.step);
+      mail.mission = withReplay(mail.mission, step);
+      hideFb();
+      reopenAfterSignOut();
+      goFolder('inbox');
+      mailToast(L(`Práctica extra del paso ${step}. Al terminar, volverás a donde estabas.`, `Extra practice of step ${step}. When you finish, you will return to where you were.`));
+      break;
+    }
     case 'report-download':
       downloadReport();
       break;
@@ -321,8 +332,8 @@ export function mailClick(event) {
       hideFb();
       const mission = mail.mission;
       if (mission.step === STEP.SIGN_OUT && !mission.done) {
-        logHelp(STEP.SIGN_OUT, 'Tocaste “Cancel” en la pregunta “¿Seguro que quieres cerrar sesión?”', '');
-        mailToast('No pasa nada. Cuando estés listo, toca “Sign out” otra vez.');
+        logHelp(STEP.SIGN_OUT, { es: 'Tocaste “Cancel” en la pregunta “¿Seguro que quieres cerrar sesión?”', en: 'You tapped “Cancel” when asked “Are you sure you want to sign out?”' }, '');
+        mailToast(L('No pasa nada. Cuando estés listo, toca “Sign out” otra vez.', 'No problem. When you are ready, tap “Sign out” again.'));
       }
       break;
     }

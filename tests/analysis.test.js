@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyze, listEs } from '../js/mail/domain/analysis.js';
+import { analyze, listText } from '../js/mail/domain/analysis.js';
 
 const body = 'Estimado Carlos:\n\nLe adjunto la factura n.º 1045.\n\nSaludos cordiales,\nAna';
 const message = (atts, subject = 'Factura n.º 1045') => ({
@@ -50,9 +50,23 @@ test('forwarded messages skip body requirements', () => {
   assert.equal(result.req, null);
 });
 
-test('listEs joins short and long lists naturally', () => {
-  assert.equal(listEs([]), '');
-  assert.equal(listEs(['uno']), 'uno');
-  assert.equal(listEs(['uno', 'dos']), 'uno y dos');
-  assert.equal(listEs(['uno', 'dos', 'tres']), 'uno, dos y tres');
+test('listText joins short and long lists naturally', () => {
+  assert.equal(listText([]), '');
+  assert.equal(listText(['uno']), 'uno');
+  assert.equal(listText(['uno', 'dos']), 'uno y dos');
+  assert.equal(listText(['uno', 'dos', 'tres']), 'uno, dos y tres');
+});
+
+test('feedback is written in English when English is chosen', async () => {
+  const { setLangForTests } = await import('../js/shared/i18n.js');
+  setLangForTests('en');
+  try {
+    const { items } = analyze({ subject: '(no subject)', to: 'a@b.com', atts: [] }, 'new', 'hello', 'boss');
+    const subject = items.find((item) => item.id === 'NO_SUBJECT');
+    assert.equal(subject.t, 'Missing subject');
+    assert.match(subject.d, /without a subject/);
+    assert.equal(listText(['a', 'b', 'c']), 'a, b and c');
+  } finally {
+    setLangForTests('es');
+  }
 });

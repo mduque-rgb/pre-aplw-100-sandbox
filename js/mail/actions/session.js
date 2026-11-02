@@ -1,5 +1,6 @@
 import { browser } from '../../browser/browser.js';
 import { $m } from '../../shared/dom.js';
+import { L } from '../../shared/i18n.js';
 import { ic } from '../../shell/icons.js';
 import { logTry } from '../domain/mission.js';
 import { withDone } from '../domain/mission-state.js';
@@ -14,8 +15,8 @@ export function askSignOut() {
 
   $m('m-fb').innerHTML = `<div class="m-fb" role="alertdialog" aria-modal="true" aria-labelledby="fb-h" aria-describedby="so-d">
     <div class="fb-top"><span class="fb-tick mr-q" aria-hidden="true">?</span><h2 id="fb-h">Are you sure you want to sign out?</h2></div>
-    <p class="so-q" id="so-d"><b>¿Seguro que quieres cerrar sesión?</b> Para volver a entrar tendrás que escribir otra vez tu correo y tu contraseña.</p>
-    ${mission.step === STEP.SIGN_OUT && !mission.done ? '<p class="fb-retry"><b>Antes de salir, revisa:</b> ¿terminaste lo que estabas haciendo? Si dejaste un correo a medias, toca “Cancel”. Si ya terminaste, toca “Sign out”.</p>' : ''}
+    <p class="so-q" id="so-d">${L('<b>¿Seguro que quieres cerrar sesión?</b> Para volver a entrar tendrás que escribir otra vez tu correo y tu contraseña.', 'To get back in you will need to type your email and password again.')}</p>
+    ${mission.step === STEP.SIGN_OUT && !mission.done ? `<p class="fb-retry">${L('<b>Antes de salir, revisa:</b> ¿terminaste lo que estabas haciendo? Si dejaste un correo a medias, toca “Cancel”. Si ya terminaste, toca “Sign out”.', '<b>Before you leave, check:</b> did you finish what you were doing? If you left an email half-written, tap “Cancel”. If you are done, tap “Sign out”.')}</p>` : ''}
     <div class="fb-actions"><button class="m-big primary" type="button" data-act="so-confirm">Sign out</button><button class="m-big" type="button" data-act="so-cancel">Cancel</button></div>
   </div>`;
   $m('m-fb').hidden = false;
@@ -42,10 +43,13 @@ export function signOut() {
   overlay.id = 'm-out';
   overlay.innerHTML = `<div class="m-out-card" role="status">
     <div class="so-ic" aria-hidden="true">${ic('check')}</div>
-    <h2>You’re signed out</h2><p class="so-es">Cerraste tu sesión</p>
-    <p class="fb-mission"><b>¡Paso 7 completado!</b> ¡Terminaste las siete prácticas de correo!</p>
-    <ul class="so-tips"><li>Cierra tu sesión siempre que uses una tableta o computadora compartida, como en la biblioteca. Así nadie más puede leer tus correos.</li><li>Para volver a entrar, tendrás que escribir tu correo y tu contraseña.</li></ul>
-    <div class="fb-actions"><button class="m-big primary" type="button" data-act="report">Ver mi informe</button><button class="m-big" type="button" data-act="so-login">Volver a iniciar sesión</button></div>
+    <h2>You’re signed out</h2>${L('<p class="so-es">Cerraste tu sesión</p>', '')}
+    <p class="fb-mission">${L('<b>¡Paso 7 completado!</b> ¡Terminaste las siete prácticas de correo!', '<b>Step 7 complete!</b> You finished all seven email practices!')}</p>
+    <ul class="so-tips">${L(
+    '<li>Cierra tu sesión siempre que uses una tableta o computadora compartida, como en la biblioteca. Así nadie más puede leer tus correos.</li><li>Para volver a entrar, tendrás que escribir tu correo y tu contraseña.</li>',
+    '<li>Always sign out when you use a shared tablet or computer, like at the library. That way nobody else can read your emails.</li><li>To get back in, you will need to type your email and password.</li>',
+  )}</ul>
+    <div class="fb-actions"><button class="m-big primary" type="button" data-act="report">${L('Ver mi informe', 'See my report')}</button><button class="m-big" type="button" data-act="so-login">${L('Volver a iniciar sesión', 'Sign in again')}</button></div>
   </div>`;
 
   $m('mail-app').appendChild(overlay);
@@ -54,4 +58,14 @@ export function signOut() {
   browser.el.url.value = 'gmail.com';
   browser.el.tab.textContent = 'Signed out';
   /** @type {HTMLElement} */ (overlay.querySelector('.m-big')).focus();
+}
+
+/** Removes the “signed out” screen so the learner can keep practising in the inbox. */
+export function reopenAfterSignOut() {
+  const overlay = $m('m-out');
+  if (!overlay) return;
+  overlay.remove();
+  const banner = /** @type {HTMLElement|null} */ (browser.el.page.querySelector('.m-banner'));
+  if (banner) banner.hidden = false;
+  browser.el.url.value = 'gmail.com/inbox';
 }

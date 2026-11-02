@@ -1,5 +1,6 @@
 import { esc } from '../../shared/dom.js';
-import { ISSUES } from './issues.js';
+import { L } from '../../shared/i18n.js';
+import { issueLabel } from './issues.js';
 
 export const fold = (text) => [...text]
   .map((character) => (character === '’' || character === '‘' ? "'" : character.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))
@@ -147,22 +148,25 @@ export function writingChecks(own, mode) {
   const hasBye = byeWords || signed;
   const req = { greet: hasGreet, bye: hasBye, answer: true, request: true, date: true, invoice: true, attMention: true };
 
-  const greetingExample = isSofia ? 'Hola Sofía,' : isBoss ? 'Estimada Laura:' : isClient ? 'Estimado Carlos:' : 'Hola,';
+  const greetingExample = isSofia ? L('Hola Sofía,', 'Hi Sofía,') : isBoss ? L('Estimada Laura:', 'Dear Laura,') : isClient ? L('Estimado Carlos:', 'Dear Carlos,') : L('Hola,', 'Hello,');
   if (!hasGreet) {
-    items.push({ ok: false, t: ISSUES.NO_GREETING.title, d: `Tu correo no empieza con un saludo. Escribe uno en la primera línea, por ejemplo: “${greetingExample}”.` });
+    items.push({ ok: false, id: 'NO_GREETING', t: issueLabel('NO_GREETING'), d: L(`Tu correo no empieza con un saludo. Escribe uno en la primera línea, por ejemplo: “${greetingExample}”.`, `Your email does not start with a greeting. Write one on the first line, for example: “${greetingExample}”.`) });
   } else if (formal && /^\s*(hey|que tal|que onda|hola jef[ae])\b/.test(first)) {
     items.push({
       ok: false,
-      t: ISSUES.INFORMAL_GREETING.title,
-      d: `Tu saludo es para un amigo, no para ${isBoss ? 'tu jefa' : 'un cliente'}. En el trabajo usa uno más formal, como ${isBoss ? '“Estimada Laura:” o “Buenos días, Laura:”' : '“Estimado Carlos:” o “Buenos días, Sr. Rivera:”'}.`,
+      id: 'INFORMAL_GREETING', t: issueLabel('INFORMAL_GREETING'),
+      d: L(
+        `Tu saludo es para un amigo, no para ${isBoss ? 'tu jefa' : 'un cliente'}. En el trabajo usa uno más formal, como ${isBoss ? '“Estimada Laura:” o “Buenos días, Laura:”' : '“Estimado Carlos:” o “Buenos días, Sr. Rivera:”'}.`,
+        `Your greeting is for a friend, not for ${isBoss ? 'your manager' : 'a client'}. At work use a more formal one, like ${isBoss ? '“Dear Laura,” or “Good morning, Laura,”' : '“Dear Carlos,” or “Good morning, Mr. Rivera,”'}.`,
+      ),
     });
   } else {
     items.push({
       ok: true,
-      t: 'Saludo',
+      t: L('Saludo', 'Greeting'),
       d: formal && /^\s*(estimad|buen|dear|good)/.test(first)
-        ? 'Empezaste con un saludo formal, perfecto para un correo de trabajo.'
-        : 'Empezaste con un saludo. Es una forma amable de comenzar.',
+        ? L('Empezaste con un saludo formal, perfecto para un correo de trabajo.', 'You started with a formal greeting, perfect for a work email.')
+        : L('Empezaste con un saludo. Es una forma amable de comenzar.', 'You started with a greeting. It is a friendly way to begin.'),
     });
   }
 
@@ -174,14 +178,14 @@ export function writingChecks(own, mode) {
     const future = lower.match(FUT_FIND);
     const chosen = future || answer;
     const said = chosen ? quote(chosen) : '';
-    const futureNote = future ? ' Usaste un verbo en futuro, ideal para hablar de lo que vas a hacer.' : '';
-    const example = negative ? '“Lo siento, no podré ir a cenar el domingo.”' : '“Sí, estaré ahí el domingo.”';
+    const futureNote = future ? L(' Usaste un verbo en futuro, ideal para hablar de lo que vas a hacer.', ' You used the future tense, ideal for talking about what you will do.') : '';
+    const example = negative ? L('“Lo siento, no podré ir a cenar el domingo.”', '“Sorry, I won’t be able to come for dinner on Sunday.”') : L('“Sí, estaré ahí el domingo.”', '“Yes, I will be there on Sunday.”');
 
     items.push(!answer
-      ? { ok: false, t: ISSUES.NO_ANSWER.title, d: 'Sofía te preguntó si quieres ir a cenar el domingo, pero tu correo no dice si vas a ir. Escríbelo claramente, por ejemplo: “¡Sí, estaré ahí el domingo!” o “Lo siento, no podré ir el domingo.”' }
+      ? { ok: false, id: 'NO_ANSWER', t: issueLabel('NO_ANSWER'), d: L('Sofía te preguntó si quieres ir a cenar el domingo, pero tu correo no dice si vas a ir. Escríbelo claramente, por ejemplo: “¡Sí, estaré ahí el domingo!” o “Lo siento, no podré ir el domingo.”', 'Sofía asked if you want to come for dinner on Sunday, but your email does not say whether you will go. Say it clearly, for example: “Yes, I will be there on Sunday!” or “Sorry, I can’t come on Sunday.”') }
       : topic
-        ? { ok: true, t: 'Respuesta a su pregunta', d: `Contestaste su pregunta sobre la cena del domingo (“${said}”).${futureNote} Así Sofía sabe qué esperar.` }
-        : { ok: true, t: 'Respuesta a su pregunta', d: `Contestaste su pregunta (“${said}”).${futureNote} Para que quede aún más claro, menciona la cena o el domingo, por ejemplo: ${example}` });
+        ? { ok: true, t: L('Respuesta a su pregunta', 'Answer to her question'), d: L(`Contestaste su pregunta sobre la cena del domingo (“${said}”).${futureNote} Así Sofía sabe qué esperar.`, `You answered her question about Sunday dinner (“${said}”).${futureNote} Now Sofía knows what to expect.`) }
+        : { ok: true, t: L('Respuesta a su pregunta', 'Answer to her question'), d: L(`Contestaste su pregunta (“${said}”).${futureNote} Para que quede aún más claro, menciona la cena o el domingo, por ejemplo: ${example}`, `You answered her question (“${said}”).${futureNote} To make it even clearer, mention the dinner or Sunday, for example: ${example}`) });
   }
 
   if (isBoss) {
@@ -193,20 +197,20 @@ export function writingChecks(own, mode) {
     req.date = Boolean(date);
 
     items.push(dayOff
-      ? { ok: true, t: 'Tu petición', d: `Dijiste claramente lo que pides (“${quote(dayOff)}”).` }
-      : { ok: false, t: ISSUES.NO_REQUEST.title, d: 'Tu correo no dice que quieres un día libre. Escríbelo claramente, por ejemplo: “Quisiera pedirle el viernes libre.”' });
+      ? { ok: true, t: L('Tu petición', 'Your request'), d: L(`Dijiste claramente lo que pides (“${quote(dayOff)}”).`, `You said clearly what you are asking for (“${quote(dayOff)}”).`) }
+      : { ok: false, id: 'NO_REQUEST', t: issueLabel('NO_REQUEST'), d: L('Tu correo no dice que quieres un día libre. Escríbelo claramente, por ejemplo: “Quisiera pedirle el viernes libre.”', 'Your email does not say you want a day off. Say it clearly, for example: “I would like to ask for Friday off.”') });
 
     items.push(date
-      ? { ok: true, t: 'El día', d: `Dijiste qué día necesitas (“${quote(date)}”). Así tu jefa puede organizar el trabajo.` }
-      : { ok: false, t: ISSUES.NO_DATE.title, d: 'No dices qué día necesitas libre. Escribe el día o la fecha, por ejemplo: “el viernes 24 de octubre”.' });
+      ? { ok: true, t: L('El día', 'The day'), d: L(`Dijiste qué día necesitas (“${quote(date)}”). Así tu jefa puede organizar el trabajo.`, `You said which day you need (“${quote(date)}”). Now your manager can plan the work.`) }
+      : { ok: false, id: 'NO_DATE', t: issueLabel('NO_DATE'), d: L('No dices qué día necesitas libre. Escribe el día o la fecha, por ejemplo: “el viernes 24 de octubre”.', 'You do not say which day you need off. Write the day or the date, for example: “Friday, October 24”.') });
 
     items.push(polite
-      ? { ok: true, t: 'Cortesía', d: `Lo pediste con amabilidad (“${quote(polite)}”). Con un jefe, pedir en vez de avisar causa una buena impresión.` }
-      : { ok: false, t: ISSUES.NOT_POLITE.title, d: 'Tu correo suena a aviso, no a petición. Usa una forma amable, como “¿Sería posible…?”, “Quisiera pedirle…” o “Le agradecería…”.' });
+      ? { ok: true, t: L('Cortesía', 'Politeness'), d: L(`Lo pediste con amabilidad (“${quote(polite)}”). Con un jefe, pedir en vez de avisar causa una buena impresión.`, `You asked kindly (“${quote(polite)}”). With a manager, asking instead of announcing makes a good impression.`) }
+      : { ok: false, id: 'NOT_POLITE', t: issueLabel('NOT_POLITE'), d: L('Tu correo suena a aviso, no a petición. Usa una forma amable, como “¿Sería posible…?”, “Quisiera pedirle…” o “Le agradecería…”.', 'Your email sounds like an announcement, not a request. Use a polite form, like “Would it be possible…?”, “I would like to ask…” or “I would appreciate…”.') });
 
     items.push(reason
-      ? { ok: true, t: 'El motivo', d: 'Explicaste por qué necesitas el día. Eso ayuda a tu jefa a entender tu petición.' }
-      : { ok: false, t: ISSUES.NO_REASON.title, d: 'Es buena idea explicar brevemente por qué lo necesitas, por ejemplo: “porque tengo una cita médica”. No hace falta dar detalles privados.' });
+      ? { ok: true, t: L('El motivo', 'The reason'), d: L('Explicaste por qué necesitas el día. Eso ayuda a tu jefa a entender tu petición.', 'You explained why you need the day. That helps your manager understand your request.') }
+      : { ok: false, id: 'NO_REASON', t: issueLabel('NO_REASON'), d: L('Es buena idea explicar brevemente por qué lo necesitas, por ejemplo: “porque tengo una cita médica”. No hace falta dar detalles privados.', 'It is a good idea to briefly explain why you need it, for example: “because I have a doctor’s appointment”. You do not need to share private details.') });
   }
 
   if (isClient) {
@@ -217,57 +221,63 @@ export function writingChecks(own, mode) {
     req.attMention = Boolean(attachment);
 
     items.push(!invoice
-      ? { ok: false, t: ISSUES.NO_INVOICE_MENTION.title, d: 'Tu mensaje no dice qué le envías al cliente. Escríbelo, por ejemplo: “Le envío la factura n.º 1045.”' }
+      ? { ok: false, id: 'NO_INVOICE_MENTION', t: issueLabel('NO_INVOICE_MENTION'), d: L('Tu mensaje no dice qué le envías al cliente. Escríbelo, por ejemplo: “Le envío la factura n.º 1045.”', 'Your message does not say what you are sending the client. Say it, for example: “Please find invoice #1045 attached.”') }
       : number
-        ? { ok: true, t: 'La factura', d: 'Dijiste de qué factura se trata (n.º 1045). Así el cliente sabe exactamente qué recibe.' }
-        : { ok: false, t: ISSUES.NO_INVOICE_NUMBER.title, d: 'Mencionaste la factura, pero no su número. Agrega “n.º 1045” para que el cliente sepa cuál es.' });
+        ? { ok: true, t: L('La factura', 'The invoice'), d: L('Dijiste de qué factura se trata (n.º 1045). Así el cliente sabe exactamente qué recibe.', 'You said which invoice it is (#1045). Now the client knows exactly what they are getting.') }
+        : { ok: false, id: 'NO_INVOICE_NUMBER', t: issueLabel('NO_INVOICE_NUMBER'), d: L('Mencionaste la factura, pero no su número. Agrega “n.º 1045” para que el cliente sepa cuál es.', 'You mentioned the invoice, but not its number. Add “#1045” so the client knows which one it is.') });
 
     items.push(attachment
-      ? { ok: true, t: 'Avisas del adjunto', d: `Le dijiste al cliente que va un archivo adjunto (“${quote(attachment)}”).` }
-      : { ok: false, t: ISSUES.NO_ATTACHMENT_MENTION.title, d: 'Escribe una frase que diga que el archivo va adjunto, por ejemplo: “Le adjunto la factura n.º 1045.” Así el cliente sabe que debe abrirlo.' });
+      ? { ok: true, t: L('Avisas del adjunto', 'You mention the attachment'), d: L(`Le dijiste al cliente que va un archivo adjunto (“${quote(attachment)}”).`, `You told the client a file is attached (“${quote(attachment)}”).`) }
+      : { ok: false, id: 'NO_ATTACHMENT_MENTION', t: issueLabel('NO_ATTACHMENT_MENTION'), d: L('Escribe una frase que diga que el archivo va adjunto, por ejemplo: “Le adjunto la factura n.º 1045.” Así el cliente sabe que debe abrirlo.', 'Write a sentence saying the file is attached, for example: “I have attached invoice #1045.” Then the client knows to open it.') });
   }
 
   const informal = formal && hasBye && INFORMAL_BYE_RE.test(fold(tail));
-  const byeExample = formal ? '“Saludos cordiales,” o “Atentamente,”' : '“Un abrazo,” o “Gracias,”';
+  const byeExample = formal ? L('“Saludos cordiales,” o “Atentamente,”', '“Kind regards,” or “Sincerely,”') : L('“Un abrazo,” o “Gracias,”', '“Hugs,” or “Thanks,”');
 
   items.push(!hasBye
     ? {
       ok: false,
-      t: ISSUES.NO_GOODBYE.title,
+      id: 'NO_GOODBYE', t: issueLabel('NO_GOODBYE'),
       d: byeAnywhere
-        ? `Usaste palabras amables, pero tu correo no termina con una despedida. Agrega una línea al final, como ${byeExample}, y debajo tu nombre.`
-        : `Tu correo no tiene una línea de despedida. Al final escribe una, como ${byeExample}, y debajo tu nombre.`,
+        ? L(`Usaste palabras amables, pero tu correo no termina con una despedida. Agrega una línea al final, como ${byeExample}, y debajo tu nombre.`, `You used kind words, but your email does not end with a closing. Add a line at the end, like ${byeExample}, and your name below it.`)
+        : L(`Tu correo no tiene una línea de despedida. Al final escribe una, como ${byeExample}, y debajo tu nombre.`, `Your email has no closing line. At the end write one, like ${byeExample}, and your name below it.`),
     }
     : informal
-      ? { ok: false, t: ISSUES.INFORMAL_GOODBYE.title, d: '“Besos” o “Un abrazo” son para amigos y familia. En un correo de trabajo usa “Saludos cordiales,” o “Atentamente,”, y debajo tu nombre.' }
+      ? { ok: false, id: 'INFORMAL_GOODBYE', t: issueLabel('INFORMAL_GOODBYE'), d: L('“Besos” o “Un abrazo” son para amigos y familia. En un correo de trabajo usa “Saludos cordiales,” o “Atentamente,”, y debajo tu nombre.', '“Kisses” or “Hugs” are for friends and family. In a work email use “Kind regards,” or “Sincerely,”, and your name below it.') }
       : {
         ok: true,
-        t: 'Despedida',
+        t: L('Despedida', 'Closing'),
         d: !byeWords
-          ? `Cerraste firmando con tu nombre (“${esc(lastLine)}”).${formal ? ' En el trabajo también puedes agregar “Saludos cordiales,” antes de tu nombre.' : ' Si quieres, puedes agregar antes una despedida como “Un abrazo,”.'}`
+          ? L(
+            `Cerraste firmando con tu nombre (“${esc(lastLine)}”).${formal ? ' En el trabajo también puedes agregar “Saludos cordiales,” antes de tu nombre.' : ' Si quieres, puedes agregar antes una despedida como “Un abrazo,”.'}`,
+            `You ended by signing your name (“${esc(lastLine)}”).${formal ? ' At work you can also add “Kind regards,” before your name.' : ' If you like, you can add a closing like “Hugs,” before it.'}`,
+          )
           : formal
-            ? 'Cerraste con una despedida adecuada para el trabajo.'
-            : 'Cerraste con una despedida. Eso hace el mensaje más cortés.',
+            ? L('Cerraste con una despedida adecuada para el trabajo.', 'You ended with a closing that suits work.')
+            : L('Cerraste con una despedida. Eso hace el mensaje más cortés.', 'You ended with a closing. That makes the message more polite.'),
       });
 
   const runOns = findRunOns(own);
   items.push(runOns.length
     ? {
       ok: false,
-      t: ISSUES.RUN_ON_SENTENCE.title,
-      d: `${runOns.length === 1 ? 'Esta oración sigue y sigue' : 'Algunas oraciones siguen y siguen'} sin un punto: ${runOns.slice(0, 2).map((runOn) => `“${esc(runOn.start)}…” (${runOn.n} palabras)`).join(', ')}. Cuando termines una idea, pon un punto (.) y empieza la siguiente oración con mayúscula. Así es más fácil de leer.`,
+      id: 'RUN_ON_SENTENCE', t: issueLabel('RUN_ON_SENTENCE'),
+      d: L(
+        `${runOns.length === 1 ? 'Esta oración sigue y sigue' : 'Algunas oraciones siguen y siguen'} sin un punto: ${runOns.slice(0, 2).map((runOn) => `“${esc(runOn.start)}…” (${runOn.n} palabras)`).join(', ')}. Cuando termines una idea, pon un punto (.) y empieza la siguiente oración con mayúscula. Así es más fácil de leer.`,
+        `${runOns.length === 1 ? 'This sentence goes on and on' : 'Some sentences go on and on'} without a full stop: ${runOns.slice(0, 2).map((runOn) => `“${esc(runOn.start)}…” (${runOn.n} words)`).join(', ')}. When you finish an idea, add a full stop (.) and start the next sentence with a capital letter. It is easier to read.`,
+      ),
     }
-    : { ok: true, t: 'Oraciones', d: 'Tus oraciones tienen un buen largo y se leen con facilidad.' });
+    : { ok: true, t: L('Oraciones', 'Sentences'), d: L('Tus oraciones tienen un buen largo y se leen con facilidad.', 'Your sentences are a good length and easy to read.') });
 
   items.push(glued.length
     ? {
       ok: false,
-      t: ISSUES.GLUED_WORDS.title,
-      d: `Parece que algunas palabras quedaron pegadas: ${glued.map((item) => `<span class="fb-fix"><s>${esc(item.bad)}</s> → <b>${esc(item.fix)}</b></span>`).join(' ')} Pon un espacio entre cada palabra, y también después de cada coma o punto.`,
+      id: 'GLUED_WORDS', t: issueLabel('GLUED_WORDS'),
+      d: `${L('Parece que algunas palabras quedaron pegadas:', 'Some words seem stuck together:')} ${glued.map((item) => `<span class="fb-fix"><s>${esc(item.bad)}</s> → <b>${esc(item.fix)}</b></span>`).join(' ')} ${L('Pon un espacio entre cada palabra, y también después de cada coma o punto.', 'Put a space between words, and also after every comma or full stop.')}`,
     }
-    : { ok: true, t: 'Espacios', d: 'Separaste bien las palabras.' });
+    : { ok: true, t: L('Espacios', 'Spaces'), d: L('Separaste bien las palabras.', 'You separated the words well.') });
 
   return { items, req };
 }
 
-export { ATT_MENTION_RE };
+export { ATT_MENTION_RE, DATE_RE };

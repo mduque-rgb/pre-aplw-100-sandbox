@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" data-lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -10,7 +10,23 @@
   <link rel="stylesheet" href="./css/mail.css">
 </head>
 <body>
-<p class="hint">Practice tablet. Tap <strong>Browser</strong> to open the web browser. Tap the bar at the bottom of the screen to go home.</p>
+<header class="topbar">
+  <p class="hint"><span data-l="es">Tableta de práctica. Toca <strong>Browser</strong> para abrir el navegador. Toca la barra de abajo de la pantalla para volver al inicio.</span><span data-l="en">Practice tablet. Tap <strong>Browser</strong> to open the web browser. Tap the bar at the bottom of the screen to go home.</span></p>
+  <div class="tools" role="toolbar" aria-label="Opciones de lectura / Reading options">
+    <div class="seg" role="group" aria-labelledby="lang-label">
+      <span class="sr-only" id="lang-label">Idioma de las instrucciones / Instructions language</span>
+      <button type="button" class="seg-btn" data-set-lang="es" aria-pressed="true" lang="es">Español</button>
+      <button type="button" class="seg-btn" data-set-lang="en" aria-pressed="false" lang="en">English</button>
+    </div>
+    <div class="seg" role="group" aria-labelledby="zoom-label">
+      <span class="sr-only" id="zoom-label"><span data-l="es">Tamaño de la letra</span><span data-l="en">Text size</span></span>
+      <button type="button" class="seg-btn" id="zoom-out"><span aria-hidden="true">A−</span><span class="sr-only"><span data-l="es">Letra más pequeña</span><span data-l="en">Smaller text</span></span></button>
+      <output class="zoom-level" id="zoom-level" aria-live="polite">100%</output>
+      <button type="button" class="seg-btn" id="zoom-in"><span aria-hidden="true">A+</span><span class="sr-only"><span data-l="es">Letra más grande</span><span data-l="en">Larger text</span></span></button>
+    </div>
+    <button type="button" class="tool-btn" id="read-aloud" aria-pressed="false"><span aria-hidden="true">🔊</span> <span data-l="es">Escuchar</span><span data-l="en">Listen</span></button>
+  </div>
+</header>
 
 <div class="tablet" id="tablet">
   <div class="screen" id="screen">
@@ -43,32 +59,43 @@
         <button class="tb-btn tb-close" id="b-close" title="Close browser" aria-label="Close browser"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="tabbar"><span class="tab"><span id="b-tab">Start Page</span><button class="tab-x" id="b-tabclose" type="button" title="Close tab" aria-label="Close tab"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button></span></div>
-      <div class="guide-strip" id="guide-strip" role="status" hidden><b>Ahora ve a www.gmail.com:</b> toca la barra de direcciones de arriba, escribe <b>www.gmail.com</b> y toca <b>Enter</b> (Intro) en el teclado.</div>
+      <div class="guide-strip" id="guide-strip" role="status" hidden><span data-l="es"><b>Ahora ve a www.gmail.com:</b> toca la barra de direcciones de arriba, escribe <b>www.gmail.com</b> y toca <b>Enter</b> (Intro) en el teclado.</span><span data-l="en"><b>Now go to www.gmail.com:</b> tap the address bar at the top, type <b>www.gmail.com</b> and tap <b>Enter</b> on the keyboard.</span></div>
       <div class="page" id="b-page"></div>
     </div>
 
     <!-- First instruction, shown on the home screen after the learner enters their name -->
     <div class="guide" id="guide" role="status" hidden>
-      <p class="guide-k">Tu primera tarea</p>
-      <p class="guide-t">Abre tu navegador y ve a www.gmail.com</p>
-      <ol>
+      <p class="guide-k"><span data-l="es">Tu primera tarea</span><span data-l="en">Your first task</span></p>
+      <p class="guide-t"><span data-l="es">Abre tu navegador y ve a www.gmail.com</span><span data-l="en">Open your browser and go to www.gmail.com</span></p>
+      <ol data-l="es">
         <li>Toca el ícono del navegador, <b>Browser</b>: el globo azul en la fila de abajo.</li>
         <li>Toca la barra de direcciones de arriba, escribe <b>www.gmail.com</b> y toca <b>Enter</b> (Intro) en el teclado.</li>
       </ol>
+      <ol data-l="en">
+        <li>Tap the browser icon, <b>Browser</b>: the blue globe in the bottom row.</li>
+        <li>Tap the address bar at the top, type <b>www.gmail.com</b> and tap <b>Enter</b> on the keyboard.</li>
+      </ol>
     </div>
 
-    <button class="homebar" id="homebar" aria-label="Go to home screen"></button>
+    <button class="homebar" id="homebar" aria-label="Go to home screen / Ir al inicio"></button>
 
     <!-- Welcome: asks for the learner's name before anything else; it appears on the final report -->
     <div class="welcome" id="welcome" role="dialog" aria-modal="true" aria-labelledby="wl-h">
       <form class="wl-card" id="wl-form" novalidate>
         <div class="wl-icon" aria-hidden="true">👋</div>
-        <h2 id="wl-h">¡Te damos la bienvenida!</h2>
-        <p>Antes de empezar, escribe tu nombre y tu apellido. Aparecerán en tu informe final.</p>
-        <label class="wl-field"><span>Nombre</span><input id="wl-first" type="text" autocomplete="given-name" autocapitalize="words" spellcheck="false" placeholder="Ejemplo: María"></label>
-        <label class="wl-field"><span>Apellido(s)</span><input id="wl-last" type="text" autocomplete="family-name" autocapitalize="words" spellcheck="false" placeholder="Ejemplo: López García"></label>
-        <p class="wl-err" id="wl-err" role="alert" hidden></p>
-        <button class="wl-go" type="submit">Comenzar</button>
+        <h2 id="wl-h"><span data-l="es">¡Te damos la bienvenida!</span><span data-l="en">Welcome!</span></h2>
+        <div class="wl-resume" id="wl-resume" hidden>
+          <p id="wl-resume-text"></p>
+          <button class="wl-go" type="button" id="wl-continue"><span data-l="es">Continuar donde lo dejé</span><span data-l="en">Continue where I left off</span></button>
+          <button class="wl-alt" type="button" id="wl-restart"><span data-l="es">Empezar de nuevo (borra lo guardado)</span><span data-l="en">Start over (deletes saved progress)</span></button>
+        </div>
+        <div class="wl-new" id="wl-new">
+          <p><span data-l="es">Antes de empezar, escribe tu nombre y tu apellido. Aparecerán en tu informe final.</span><span data-l="en">Before you start, type your first and last name. They will appear on your final report.</span></p>
+          <label class="wl-field"><span><span data-l="es">Nombre</span><span data-l="en">First name</span></span><input id="wl-first" type="text" autocomplete="given-name" autocapitalize="words" spellcheck="false" data-ph-es="Ejemplo: María" data-ph-en="Example: Maria" placeholder="Ejemplo: María"></label>
+          <label class="wl-field"><span><span data-l="es">Apellido(s)</span><span data-l="en">Last name</span></span><input id="wl-last" type="text" autocomplete="family-name" autocapitalize="words" spellcheck="false" data-ph-es="Ejemplo: López García" data-ph-en="Example: Lopez Garcia" placeholder="Ejemplo: López García"></label>
+          <p class="wl-err" id="wl-err" role="alert" hidden></p>
+          <button class="wl-go" type="submit"><span data-l="es">Comenzar</span><span data-l="en">Start</span></button>
+        </div>
       </form>
     </div>
   </div>

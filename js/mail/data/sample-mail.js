@@ -1,5 +1,6 @@
 import { MAIL_ME } from '../account.js';
 import { CONTACTS } from '../contacts.js';
+import { PHISHING } from './phishing.js';
 
 /**
  * @typedef {import('../types.js').MailMessage} MailMessage
@@ -11,7 +12,10 @@ import { CONTACTS } from '../contacts.js';
  */
 export const TODAY = 'Oct 13';
 
-export function sampleMail() {
+/**
+ * @param {import('./phishing.js').PhishingEmail} [phish]  Which fake email this inbox contains.
+ */
+export function sampleMail(phish = PHISHING[0]) {
   let nextId = 0;
 
   /**
@@ -47,6 +51,6 @@ export function sampleMail() {
     message('Dr. Patel\'s Office', 'frontdesk@clinic.example', 'Appointment reminder for Thursday', 'Oct 12', '11:20 AM', 'Hello,\n\nThis is a reminder of your appointment on Thursday at 10:30 a.m.\n\nPlease arrive ten minutes early and bring your insurance card. If you need to change the time, reply to this email or call the front desk.\n\nThank you,\nFront Desk', { unread: true }),
     message('Weather Alerts', 'alerts@weather.example', 'Showers expected on Thursday', 'Oct 11', '5:45 PM', 'Showers are expected on Thursday with a high of 61°F.\n\nBring an umbrella if you will be outside in the morning. Friday looks cloudy and Saturday should be sunny.'),
     message('Tom Becker', 'tom.becker@example.com', 'Can you water my plants?', 'Oct 10', '2:15 PM', 'Hi neighbor,\n\nI am away next week. Could you water the plants on my porch on Monday and Thursday? The watering can is by the door.\n\nThank you so much,\nTom'),
-    message('Prize Center', 'claim-now@prize-winner-center.example', 'YOU WON a $500 gift card!!! Claim today', 'Oct 9', '1:02 AM', 'CONGRATULATIONS!!!\n\nYou have been selected to receive a $500 gift card. To claim your prize, reply with your password and date of birth within 24 hours or you will lose it!!!\n\nThis is your LAST chance.', { unread: true, warn: true }),
+    message(phish.from, phish.addr, phish.subject, 'Oct 9', '1:02 AM', phish.body, { unread: true, warn: true, phishId: phish.id }),
   ];
 }

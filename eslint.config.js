@@ -9,8 +9,13 @@ export default [
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ['tests/**/*.js', 'e2e/**/*.js', 'scripts/**/*.js', '*.config.js'],
+    files: ['tests/**/*.js', 'scripts/**/*.js', '*.config.js'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // Playwright tests run in Node but also pass functions that execute in the browser.
+    files: ['e2e/**/*.js'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
     rules: {

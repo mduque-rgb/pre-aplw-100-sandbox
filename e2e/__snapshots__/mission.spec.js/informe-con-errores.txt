@@ -68,6 +68,8 @@ Encontraste el correo falso y lo reportaste como spam.
 
 No tuviste nada que corregir.
 
+Ayudas y redirecciones
+Explicaste por qué lo reportaste: tiene prisa o una fecha límite; creo que me pide información personal
 4
 Responder a Sofía
 ✓ Completado
@@ -78,8 +80,6 @@ Lo enviaste 2 veces hasta completarlo.
 Puntos que tuviste que revisar
 Falta el saludo · ✓ Lo corregiste
 Falta la despedida · ✓ Lo corregiste
-Ayudas y redirecciones
-Explicaste por qué lo reportaste: tiene prisa o una fecha límite; creo que me pide información personal
 5
 Pedir un día libre a tu jefa
 ✓ Completado

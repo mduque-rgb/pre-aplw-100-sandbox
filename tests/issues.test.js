@@ -16,13 +16,23 @@ test('categories used by help entries exist', () => {
   for (const category of HELP_CATEGORIES) assert.ok(CATEGORIES[category], category);
 });
 
-test('issue titles are unique, so the log never mixes two problems', () => {
-  const titles = Object.values(ISSUES).map(({ title }) => title);
-  assert.equal(new Set(titles).size, titles.length);
+test('issue titles are unique in both languages, so the report never mixes two problems', () => {
+  for (const lang of ['es', 'en']) {
+    const titles = Object.values(ISSUES).map(({ title }) => title[lang]);
+    assert.equal(new Set(titles).size, titles.length, lang);
+  }
 });
 
-test('categoryOf finds known titles and ignores unknown ones', () => {
-  assert.equal(categoryOf(ISSUES.NO_GREETING.title), 'greet');
+test('every category has a title and advice in both languages', () => {
+  for (const [key, { title, advice }] of Object.entries(CATEGORIES)) {
+    for (const lang of ['es', 'en']) {
+      assert.ok(title[lang] && advice[lang], `${key} is missing ${lang}`);
+    }
+  }
+});
+
+test('categoryOf finds known ids and ignores unknown ones', () => {
+  assert.equal(categoryOf(ISSUES.NO_GREETING.id), 'greet');
   assert.equal(categoryOf('Not a real issue'), undefined);
 });
 
@@ -46,9 +56,9 @@ test('every warning produced by the analysis is in the catalog', () => {
   const seen = new Set();
   for (const sample of SAMPLES) {
     for (const item of analyze(...sample).items) {
-      if (item.ok) continue;
-      seen.add(item.t);
-      assert.ok(categoryOf(item.t), `“${item.t}” is missing from ISSUES`);
+      if (item.ok && !item.tip) continue;
+      seen.add(item.id);
+      assert.ok(categoryOf(item.id), `“${item.t}” has no issue id in ISSUES`);
     }
   }
   assert.ok(seen.size >= 15, `only ${seen.size} warnings exercised`);

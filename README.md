@@ -9,7 +9,7 @@ The project lives in the `pre-aplw-100-sandbox` directory.
 
 This application is designed for people learning how to use email for the first time. Everything takes place within a simulated tablet using practice data: no actual emails are sent, and no information is transmitted to any server.
 
-The interface combines Spanish instructions with English labels (`Inbox`, `Compose`, `Reply`, `Sign out`, etc.) to familiarize students with common Gmail vocabulary.
+Instructions, tips and the report can be shown in **Spanish or English** (switch above the tablet). The simulated Gmail always keeps its English labels (`Inbox`, `Compose`, `Reply`, `Sign out`, etc.) so students get used to the vocabulary of the real app.
 
 ## Features
 
@@ -18,10 +18,15 @@ The interface combines Spanish instructions with English labels (`Inbox`, `Compo
 - Simulated login with detailed hints to correct email address and password entries.
 - Inbox with folders, search, read/unread emails, stars, and attachments.
 - Email actions: reply, forward, compose, delete, restore, mark as spam, undo, and empty trash.
-- Seven-step guided mission with visible progress tracking.
-- Writing feedback: greeting, subject line, sign-off, clarity, politeness, date, purpose, attachments, spacing, and overly long sentences.
+- Seven-step guided mission with visible progress tracking and a **“See my progress”** report available at any moment, so learners who stop early still get one.
+- Finished writing steps (4–6) can be **practised again** from the report.
+- Writing feedback: greeting, subject line, sign-off, clarity, politeness, date, purpose, attachments, spacing, and overly long sentences. A vague subject is shown as a tip and never blocks a step.
+- Three different phishing emails (prize, bank, parcel), one per practice, each with its own warning signs. Add `?phish=prize|bank|package` to the address to choose one.
 - Final report with statistics, areas for improvement, HTML download, copy-to-clipboard option, and a reset feature.
-- Responsive interface, keyboard navigation, and accessible announcements using `aria-live` and focus management.
+- Reading options: instructions language (Español/English), text size (100–150 %) and **Listen**, which reads the current instruction aloud with the browser's voice.
+- Progress is saved in the browser, so a reload does not lose the practice.
+- Works on tablets, computers and phones (on phones the tablet frame is dropped to use the whole screen).
+- Keyboard navigation and accessible announcements using `aria-live` and focus management; messages stay on screen according to their length and pause while hovered or focused.
 
 ## How to Run
 
@@ -112,9 +117,10 @@ pre-aplw-100-sandbox/
 │   │   ├── ui/        Inbox rendering and UI components
 │   │   ├── mission-steps.js  Named constants for the seven steps
 │   │   ├── mount.js   Inbox mount point
+│   │   ├── persist.js Saved progress (localStorage)
 │   │   └── state.js   Main email state
-│   ├── shared/        Shared utilities
-│   ├── shell/         Home screen, guide, clock, and icons
+│   ├── shared/        Shared utilities, including i18n.js (Spanish/English)
+│   ├── shell/         Home screen, guide, welcome, reading tools (language, text size, listen)
 │   └── main.js        Entry point and composition
 ├── tests/             Domain unit tests
 ├── e2e/               End-to-end tests (Playwright) and report snapshots
@@ -133,6 +139,7 @@ pre-aplw-100-sandbox/
 * Mission logic, writing analysis, attachment handling, and inbox transitions reside in `js/mail/domain/`.
 * `js/mail/domain/issues.js` is the single catalog of mistakes the practice detects and the report categories they belong to. Add new warnings there, never as loose strings.
 * Steps are referenced by name (`STEP.REPLY_SOFIA`) from `js/mail/mission-steps.js`, not by number.
+* Texts are bilingual: `L('Hola', 'Hello')` returns the current language. Data that is stored or logged (issues, help entries, phishing signs) keeps both versions (`{ es, en }`) and is resolved when shown, so changing the language re-renders the report correctly. Static HTML carries both texts in `data-l="es"` / `data-l="en"` spans and CSS shows the active one.
 * Message and mission state transitions return new data structures instead of mutating existing state.
 * Modules utilize JSDoc with `checkJs` enabled in `jsconfig.json`.
 * Zero frameworks, bundlers, or runtime dependencies.
@@ -161,7 +168,9 @@ GitHub Actions runs all of the above on every push and pull request (`.github/wo
 
 * No real emails are sent.
 * No calls to external services are made.
-* All data exists entirely in memory and is cleared upon page reload.
+* Progress (the learner's name, the practice inbox and the mission log) is saved only in this browser's `localStorage`, so a reload does not lose the practice. It is never sent anywhere.
+* Because the practice is often done on shared devices (for example, library tablets), saved progress expires after 12 hours, and **“Empezar de nuevo / Start over”** on the welcome screen deletes it immediately.
+* The language and text-size choices are also remembered in this browser.
 * Reports are generated locally.
 * All included credentials are for practice purposes only.
 

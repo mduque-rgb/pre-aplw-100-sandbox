@@ -1,7 +1,11 @@
 import { MAIL_ME } from './account.js';
 import { CONTACTS } from './contacts.js';
+import { pickPhishing } from './data/phishing.js';
 import { TODAY, sampleMail } from './data/sample-mail.js';
 import { newMission } from './domain/mission-state.js';
+
+/** A fresh practice inbox, with one of the fake emails. */
+export const freshInbox = () => sampleMail(pickPhishing());
 
 export const FOLDERS = [
   ['inbox', 'Inbox', 'inbox'],
@@ -11,9 +15,13 @@ export const FOLDERS = [
   ['trash', 'Trash', 'trash'],
 ];
 
+function freshInboxAtStart() {
+  return typeof window === 'undefined' ? sampleMail() : sampleMail(pickPhishing());
+}
+
 /** @type {import('./types.js').MailState} */
 export const mail = {
-  msgs: sampleMail(),
+  msgs: freshInboxAtStart(),
   folder: 'inbox',
   open: null,
   q: '',

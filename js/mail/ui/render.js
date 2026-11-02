@@ -1,5 +1,7 @@
 import { browserEls } from '../../browser/state.js';
 import { esc, $m } from '../../shared/dom.js';
+import { L, tx } from '../../shared/i18n.js';
+import { phishingById } from '../data/phishing.js';
 import { ic } from '../../shell/icons.js';
 import { missionHTML } from '../domain/mission.js';
 import {
@@ -103,17 +105,18 @@ function readHTML(message) {
   }
 
   const phishStep = mail.mission.step === STEP.REPORT_PHISH && !mail.mission.done && message.warn;
+  const signs = message.warn ? tx(phishingById(message.phishId).readTip) : '';
   const safety = (phishStep && message.folder === 'trash')
-    ? '<div class="m-mission"><p><b>Paso 3 de 7:</b> este correo falso está en la Papelera. Toca <b>Restore</b> (Restaurar) arriba y luego, desde tu bandeja, ábrelo otra vez y toca <b>Report spam</b>.</p></div>'
+    ? `<div class="m-mission"><p>${L('<b>Paso 3 de 7:</b> este correo falso está en la Papelera. Toca <b>Restore</b> (Restaurar) arriba y luego, desde tu bandeja, ábrelo otra vez y toca <b>Report spam</b>.', '<b>Step 3 of 7:</b> this fake email is in the Trash. Tap <b>Restore</b> above, then open it again from your inbox and tap <b>Report spam</b>.')}</p></div>`
     : (phishStep && message.folder !== 'spam')
-      ? '<div class="m-mission"><p><b>Paso 3 de 7: ¡Este correo es falso!</b> Fíjate en las señales: un remitente que no conoces, un premio que no pediste, mucha prisa (“24 hours”) y te pide tu contraseña. <b>No respondas.</b> Toca <b>Report spam</b> (Reportar spam) arriba.</p></div>'
+      ? `<div class="m-mission"><p>${L(`<b>Paso 3 de 7: ¡Este correo es falso!</b> Fíjate en las señales: ${signs}. <b>No respondas.</b> Toca <b>Report spam</b> (Reportar spam) arriba.`, `<b>Step 3 of 7: This email is fake!</b> Look at the signs: ${signs}. <b>Don’t reply.</b> Tap <b>Report spam</b> above.`)}</p></div>`
       : message.warn
-        ? '<div class="m-safety"><p><b>Practice tip:</b> this message looks like spam. Real companies never ask for your password by email. Tap “Report spam” to move it out of your inbox.</p><p><b>Consejo:</b> este mensaje parece spam. Ninguna empresa real te pide tu contraseña por correo. Toca “Report spam”.</p></div>'
+        ? `<div class="m-safety"><p>${L('<b>Consejo:</b> este mensaje parece spam. Ninguna empresa real te pide tu contraseña ni los datos de tu tarjeta por correo. Toca “Report spam” para sacarlo de tu bandeja.', '<b>Practice tip:</b> this message looks like spam. Real companies never ask for your password or card details by email. Tap “Report spam” to move it out of your inbox.')}</p></div>`
         : '';
 
   return `<div class="m-tools">${tools}</div>
   <article class="m-msg">
-    ${mail.mission.step === STEP.DELETE_OLD && !mail.mission.done && !message.mine && !isSofia(message) && message.folder !== 'trash' ? '<div class="m-mission"><p><b>Paso 2 de 7:</b> si ya no necesitas este correo, toca <b>Delete</b> (Borrar) arriba.</p></div>' : ''}
+    ${mail.mission.step === STEP.DELETE_OLD && !mail.mission.done && !message.mine && !isSofia(message) && message.folder !== 'trash' ? `<div class="m-mission"><p>${L('<b>Paso 2 de 7:</b> si ya no necesitas este correo, toca <b>Delete</b> (Borrar) arriba.', '<b>Step 2 of 7:</b> if you no longer need this email, tap <b>Delete</b> above.')}</p></div>` : ''}
     <h2 class="m-subject">${esc(message.subject)}</h2>
     <div class="m-meta"><span class="m-av2" style="background:${avColor(message.mine ? 'N' : message.from)}">${esc((message.mine ? 'N' : message.from).charAt(0).toUpperCase())}</span>
       <div><div><b>${esc(message.mine ? 'Me' : message.from)}</b> <span class="m-muted">&lt;${esc(message.addr)}&gt;</span></div>
@@ -121,7 +124,7 @@ function readHTML(message) {
     ${safety}
     <div class="m-text">${esc(message.body)}</div>
     ${message.atts && message.atts.length ? `<div class="m-atts" aria-label="Attachments">${message.atts.map((name) => attChip(name, false)).join('')}</div>` : ''}
-    ${mail.mission.step === STEP.REPLY_SOFIA && !mail.mission.done && isSofia(message) ? '<div class="m-mission"><p><b>Paso 4 de 7:</b> toca <b>Reply</b> (Responder), aquí abajo, para contestarle a Sofía.</p></div>' : ''}
+    ${mail.mission.step === STEP.REPLY_SOFIA && !mail.mission.done && isSofia(message) ? `<div class="m-mission"><p>${L('<b>Paso 4 de 7:</b> toca <b>Reply</b> (Responder), aquí abajo, para contestarle a Sofía.', '<b>Step 4 of 7:</b> tap <b>Reply</b>, below, to answer Sofía.')}</p></div>` : ''}
     <div class="m-actions"><button class="m-big primary" type="button" data-act="reply">${ic('reply')}Reply</button><button class="m-big" type="button" data-act="forward">${ic('forward')}Forward</button></div>
   </article>`;
 }

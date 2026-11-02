@@ -1,4 +1,5 @@
 import { esc, $m } from '../../shared/dom.js';
+import { L } from '../../shared/i18n.js';
 import { ic } from '../../shell/icons.js';
 import { FILES, extOf, fileOf } from '../data/attachments.js';
 import { hideCoach } from './coach.js';
@@ -30,11 +31,11 @@ export function togglePicker(open) {
     return;
   }
 
-  picker.innerHTML = `<h3>Choose a file to attach</h3><p class="pk-sub">Elige el archivo que quieres adjuntar. Tócalo una vez.</p>
+  picker.innerHTML = `<h3>Choose a file to attach</h3><p class="pk-sub">${L('Elige el archivo que quieres adjuntar. Tócalo una vez.', 'Choose the file you want to attach. Tap it once.')}</p>
     ${FILES.map((file) => {
       const attached = compose._atts.includes(file.name);
       const extension = extOf(file.name);
-      return `<button class="pick-row" type="button" data-act="pick" data-f="${esc(file.name)}"${attached ? ' disabled' : ''}><span class="att-ic ${extension}" aria-hidden="true">${extension.toUpperCase()}</span><span class="att-name">${esc(file.name)}<span class="att-size">${esc(file.size)}${attached ? ' · ya adjuntado' : ''}</span></span></button>`;
+      return `<button class="pick-row" type="button" data-act="pick" data-f="${esc(file.name)}"${attached ? ' disabled' : ''}><span class="att-ic ${extension}" aria-hidden="true">${extension.toUpperCase()}</span><span class="att-name">${esc(file.name)}<span class="att-size">${esc(file.size)}${attached ? L(' · ya adjuntado', ' · already attached') : ''}</span></span></button>`;
     }).join('')}
     <div class="mc-cbtns"><button class="m-link" type="button" data-act="pick-cancel">Cancel</button></div>`;
   picker.hidden = false;
