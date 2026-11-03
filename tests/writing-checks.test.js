@@ -62,3 +62,66 @@ test('glued words and run-on sentences are reported', () => {
   assert.equal(badItems(glued).includes('Faltan espacios entre palabras'), true);
   assert.equal(badItems(runOn).includes('Oración demasiado larga'), true);
 });
+
+const problemIds = (text, mode) => writingChecks(text, mode).items.filter((item) => !item.ok).map((item) => item.id);
+
+test('real words are never reported as glued words', () => {
+  const words = [
+    // English words that split into shorter known words.
+    'late', 'note', 'idea', 'area', 'side', 'theme', 'queen', 'formal', 'forget', 'delete', 'panel', 'estate', 'versus',
+    'anyone', 'someday', 'somewhere', 'overall', 'overnight', 'weekday', 'without', 'myself', 'often', 'awesome', 'fourteen',
+    // Spanish words that split into shorter known words.
+    'sino', 'tuya', 'tuyo', 'deme', 'media', 'medias', 'nota', 'ellos', 'ellas', 'temas', 'ahora', 'ademas', 'conmigo',
+  ];
+  for (const word of words) {
+    const text = `Hi Sofía,\n\nYes, I will be there on Sunday. ${word}\n\nHugs,\nAna`;
+    assert.equal(problemIds(text, 'sofia').includes('GLUED_WORDS'), false, word);
+  }
+});
+
+test('words really stuck together are still reported', () => {
+  for (const glued of ['sivoy', 'yovoy', 'thankyou', 'seeyou', 'nosvemos', 'porfavor', 'eldomingo', 'muchasgracias', 'iwill']) {
+    const text = `Hi Sofía,\n\nYes, I will be there on Sunday. ${glued}\n\nHugs,\nAna`;
+    assert.equal(problemIds(text, 'sofia').includes('GLUED_WORDS'), true, glued);
+  }
+});
+
+test('email and web addresses are not glued words, and contact lines do not hide the signature', () => {
+  const email = 'Dear Carlos,\n\nPlease find attached invoice #1045. More at www.example.com.\n\nKind regards,\nAna Pérez\nana.perez@gmail.com\nTel: 555-123-4567';
+  assert.deepEqual(problemIds(email, 'client'), []);
+  assert.equal(writingChecks(email, 'client').req.bye, true);
+});
+
+test('common ways to write the day-off request in English are understood', () => {
+  const bodies = [
+    'I would like to ask for Friday off because I have a doctor’s appointment.',
+    'I need Friday off, please. I have a medical appointment.',
+    'Could I have Friday off? I have to take my son to the dentist.',
+    'Would you let me take Friday off? My daughter is sick.',
+    'I am writing to ask if I could take Friday off for a personal matter.',
+  ];
+  for (const body of bodies) {
+    const email = `Dear Laura,\n\n${body}\n\nKind regards,\nAna`;
+    assert.deepEqual(problemIds(email, 'boss'), [], body);
+  }
+});
+
+test('an English email that asks for nothing is still missing the request', () => {
+  const ids = problemIds('Dear Laura,\n\nI hope you are well. Friday is a busy day.\n\nKind regards,\nAna', 'boss');
+  assert.equal(ids.includes('NO_REQUEST'), true);
+  assert.equal(ids.includes('NO_REASON'), true);
+});
+
+test('common ways to mention the attachment are understood', () => {
+  const bodies = [
+    'I am sending you invoice #1045.',
+    'I’m sending you invoice #1045.',
+    'You will find invoice #1045 attached.',
+    'Here you have invoice #1045.',
+    'Le remito la factura n.º 1045.',
+  ];
+  for (const body of bodies) {
+    const ids = problemIds(`Dear Carlos,\n\n${body}\n\nKind regards,\nAna`, 'client');
+    assert.equal(ids.includes('NO_ATTACHMENT_MENTION'), false, body);
+  }
+});
