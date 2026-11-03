@@ -125,3 +125,48 @@ test('common ways to mention the attachment are understood', () => {
     assert.equal(ids.includes('NO_ATTACHMENT_MENTION'), false, body);
   }
 });
+
+const sofiaAnswer = (body) => writingChecks(`Hola Sofía,\n\n${body}\n\nUn abrazo,\nAna`, 'sofia');
+const answerText = (result) => result.items.find((item) => item.id === 'NO_ANSWER' || item.t === 'Respuesta a su pregunta').d;
+
+test('clear yes and no answers to Sofía are accepted', () => {
+  const answers = [
+    'Sí, estaré ahí el domingo.', 'Si, estaré ahí el domingo.', '¡Sí! Me encantaría ir a cenar.', 'Si, claro que voy.',
+    'Sí voy a ir a la cena.', 'Claro que sí, nos vemos el domingo.', 'Yes, I will be there on Sunday.',
+    'Sorry for the late reply! Yes, I will be there on Sunday.', 'I can’t wait to see you on Sunday!',
+    'Sí, iré. Quizás llegue un poco tarde.', 'Yes! Maybe I can bring dessert.',
+    'Lo siento, no podré ir el domingo.', 'Sorry, I can’t come on Sunday.', 'No puedo ir, tengo que trabajar.',
+    'Sorry, I won’t be able to come for dinner on Sunday.',
+    // No accent: many tablets have no Spanish keyboard.
+    'Si puedo ir, ¡gracias por invitarme!', 'Si voy a ir a la cena.', 'Pues si, voy.', 'Creo que si, nos vemos el domingo.',
+  ];
+  for (const body of answers) assert.equal(sofiaAnswer(body).req.answer, true, body);
+});
+
+test('unsure replies to Sofía are not counted as an answer', () => {
+  const unsure = [
+    'No sé si puedo ir el domingo.', 'No sé si iré el domingo.', 'Quizá voy a la cena del domingo.', 'A ver si puedo ir el domingo.',
+    'Tal vez vaya a la cena.', 'No estoy segura de si podré ir.', 'Te aviso si puedo ir.', 'Me pregunto si podré ir.',
+    'Depende de mi trabajo, te aviso.', 'I don’t know if I can come on Sunday.', 'Maybe I will come on Sunday.',
+    'I’m not sure I can make it on Sunday.', 'Sorry, I don’t know if I can come.',
+  ];
+  for (const body of unsure) {
+    const result = sofiaAnswer(body);
+    assert.equal(result.req.answer, false, body);
+    assert.match(answerText(result), /no deja claro/, body);
+  }
+});
+
+test('“si” without an accent is accepted, with an optional tip about “sí”', () => {
+  for (const body of ['Si puedo ir, ¡gracias por invitarme!', 'Si, claro que voy.']) {
+    const result = sofiaAnswer(body);
+    assert.equal(result.req.answer, true, body);
+    assert.match(answerText(result), /teclado lo permite/, body);
+  }
+  assert.doesNotMatch(answerText(sofiaAnswer('Sí, claro que voy.')), /teclado/);
+  assert.doesNotMatch(answerText(sofiaAnswer('No sé si puedo ir el domingo.')), /tilde/);
+});
+
+test('a short “Yes” quotes the future verb that follows it', () => {
+  assert.match(answerText(sofiaAnswer('Sorry for the late reply! Yes, I will be there on Sunday.')), /“I will be there”/);
+});

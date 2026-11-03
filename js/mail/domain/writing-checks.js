@@ -16,9 +16,63 @@ const FUT_YES = 'estare|ire|llegare|llevare|vendre|cenare|comere|pasare|asistire
 const FUT_NO = "no (?:estare|ire|llegare|vendre|podre|asistire|cenare)|no (?:voy|vamos) a (?:poder|ir|estar|llegar|venir|asistir)"
   + "|(?:i won't|i will not|i'll not|i'm not going to|i am not going to|i'm not gonna|i won't be able to|i will not be able to|we won't) (?:be able to )?(?:be there|come|go|make it|attend|join|be over)|won't be able|will not be able";
 const FUT_FIND = new RegExp(String.raw`\b(?:${FUT_NO}|${FUT_YES})\b`);
-const YES_RE = new RegExp(String.raw`\b(si|yes|yeah|yep|sure|claro|por supuesto|desde luego|of course|ok|okay|vale|absolutely|definitely|me encantaria|me encanta|con gusto|with pleasure|i would love|i'd love|count me in|nos vemos (?:el domingo|alli|ahi|entonces)|sounds (?:good|great|wonderful|lovely|perfect)|${FUT_YES})\b`);
-const NO_RE = new RegExp(String.raw`\b(${FUT_NO}|no puedo|no me es posible|can't|cannot|can not|won't|will not|unable|lo siento|sorry|otro dia|another time|next time|la proxima)\b`);
+const YES_RE = new RegExp(String.raw`\b(yes|yeah|yep|sure|claro|por supuesto|desde luego|of course|ok|okay|vale|absolutely|definitely|me encantaria|me encanta|con gusto|with pleasure|i would love|i'd love|count me in|can't wait|cannot wait|looking forward|no puedo esperar|tengo (?:muchas )?ganas|nos vemos (?:el domingo|alli|ahi|entonces)|sounds (?:good|great|wonderful|lovely|perfect)|${FUT_YES})\b`);
+const NO_RE = new RegExp(String.raw`\b(${FUT_NO}|no puedo|no me es posible|(?:can't|cannot|can not)(?! wait)|won't|will not|unable|lo siento|sorry|otro dia|another time|next time|la proxima)\b`);
 const TOPIC_RE = /\b(cena|cenar|domingo|dinner|sunday|sopa|soup|tu casa|your house|come over|ir a cenar)\b/;
+// Doubt about going: “No sé si iré” or “Maybe I will come” do not tell Sofía what to expect.
+const UNSURE_RE = /\b(no se si|no se todavia|todavia no se|aun no se|a ver si|te aviso si|te digo si|me pregunto si|let you know if|i wonder if|no estoy segur[oa]|tal vez|quizas?|a lo mejor|puede que|depende|probablemente|maybe|perhaps|not sure|(?:i )?don't know (?:if|whether|yet)|(?:i )?do not know (?:if|whether|yet)|i might|might be able|it depends|depends on|probably)\b/;
+// Many tablets have no Spanish keyboard, so “si” without an accent counts as “sí” at the start or end of a phrase
+// (“Si puedo ir”, “Si, claro”, “Pues si”). Real doubt (“no sé si”, “a ver si”) is caught by UNSURE_RE first.
+const SI_YES_RE = /^si\b|\bsi$/;
+const ACCENTED_SI_RE = /(?<!\p{L})sí(?!\p{L})/iu;
+// “Sorry” alone is not a no: “Sorry, I don’t know if I can come” is still unsure.
+const WEAK_NO_RE = /^(?:lo siento|sorry)$/;
+
+/**
+ * Finds the learner's answer to Sofía, judging each part of the reply on its own,
+ * so a doubt in one part (“Quizás llegue tarde”) does not cancel a clear answer in another (“Sí, iré”).
+ * @param {string} text the reply, with accents
+ * @returns {{answer: string, negative: boolean, future: string, si?: boolean}|{unsure: string}|null}
+ */
+function findAnswer(text) {
+  let weak = null;
+  let unsure = null;
+  const parts = text.split(/[.!?;,:\n¡¿…()"“”]+|\s(?:pero|but)\s/i).map((piece) => piece.trim()).filter(Boolean);
+  const pick = (part, match) => part.slice(match.index, match.index + match[0].length);
+  // The first future verb in a part without doubt, from `from` on: “Yes, I will be there” quotes “I will be there”.
+  const futureFrom = (from) => {
+    for (const part of parts.slice(from)) {
+      const folded = fold(part);
+      const future = !UNSURE_RE.test(folded) && folded.match(FUT_FIND);
+      if (future) return pick(part, future);
+    }
+    return '';
+  };
+
+  for (const [index, part] of parts.entries()) {
+    const folded = fold(part);
+    if (UNSURE_RE.test(folded)) {
+      unsure ??= part;
+      continue;
+    }
+
+    const no = folded.match(NO_RE);
+    const yes = folded.match(YES_RE) || part.match(ACCENTED_SI_RE) || folded.match(SI_YES_RE);
+    if (no && WEAK_NO_RE.test(no[0]) && !yes) {
+      weak ??= { answer: pick(part, no), negative: true, future: futureFrom(index + 1) };
+      continue;
+    }
+    if (no || yes) {
+      const future = futureFrom(index);
+      const si = !no && !ACCENTED_SI_RE.test(part) && SI_YES_RE.test(folded);
+      // For a plain “si”, quote the whole phrase (“Si puedo ir”), not just “Si”.
+      return { answer: future || (si ? part : pick(part, no || yes)), negative: Boolean(no), future, si };
+    }
+  }
+
+  return unsure ? { unsure } : weak;
+}
+
 // Known words, per language. They tell a signature name from ordinary words, and they are the
 // pieces the glued-words check may split a token into (always within one language).
 const WORDS_ES = new Set(('a y o e u yo tu el ella mi me te se le lo la los las un una unos unas de del al en con por para sin sobre que y pero si no ya muy mas menos tan bien mal hoy manana ayer aqui alli ahi este esta esto ese esa eso como cuando donde porque gracias hola adios saludos abrazo abrazos beso besos carino amor amiga amigo querida querido sofia sofi tom domingo sabado lunes cena cenar comida sopa casa tu tus su sus nuestro voy ire vamos ir puedo podre quiero quieres claro encanta encantaria gusta gusto nos vemos hasta pronto luego entonces llevo llevar llevare postre pan vino fotos foto lago picnic favorita bonita bonitas lindas lindo me gustaron gusto mucho muchas muchos todo todos toda todas tambien hora horas que se sera es son estoy esta estas estoy feliz contenta contento ver verte vernos invitacion invitarme invitar dia dias tarde tardes noche noches buenos buenas siempre nunca seguro segura perfecto perfecta '
@@ -211,21 +265,30 @@ export function writingChecks(own, mode) {
   }
 
   if (isSofia) {
-    const negative = lower.match(NO_RE);
-    const answer = negative || lower.match(YES_RE);
+    const found = findAnswer(fixed);
+    const answer = found && 'answer' in found ? found : null;
+    const unsure = found && 'unsure' in found ? found.unsure : '';
+    const negative = Boolean(answer && answer.negative);
     const topic = TOPIC_RE.test(lower);
     req.answer = Boolean(answer);
-    const future = lower.match(FUT_FIND);
-    const chosen = future || answer;
-    const said = chosen ? quote(chosen) : '';
-    const futureNote = future ? L(' Usaste un verbo en futuro, ideal para hablar de lo que vas a hacer.', ' You used the future tense, ideal for talking about what you will do.') : '';
+    const said = answer ? esc(answer.answer) : '';
+    const futureNote = answer && answer.future ? L(' Usaste un verbo en futuro, ideal para hablar de lo que vas a hacer.', ' You used the future tense, ideal for talking about what you will do.') : '';
     const example = negative ? L('“Lo siento, no podré ir a cenar el domingo.”', '“Sorry, I won’t be able to come for dinner on Sunday.”') : L('“Sí, estaré ahí el domingo.”', '“Yes, I will be there on Sunday.”');
+    // An optional tip, never a blocker: the learner's keyboard may not have accents.
+    const siNote = answer && answer.si ? L(' Si tu teclado lo permite, puedes escribir “sí” con tilde: así se distingue de “si” (if).', ' In Spanish, if your keyboard allows it, you can write “sí” with an accent: it tells “yes” apart from “si” (if).') : '';
+    const notes = `${futureNote}${siNote}`;
 
     items.push(!answer
-      ? { ok: false, id: 'NO_ANSWER', t: issueLabel('NO_ANSWER'), d: L('Sofía te preguntó si quieres ir a cenar el domingo, pero tu correo no dice si vas a ir. Escríbelo claramente, por ejemplo: “¡Sí, estaré ahí el domingo!” o “Lo siento, no podré ir el domingo.”', 'Sofía asked if you want to come for dinner on Sunday, but your email does not say whether you will go. Say it clearly, for example: “Yes, I will be there on Sunday!” or “Sorry, I can’t come on Sunday.”') }
+      ? {
+        ok: false,
+        id: 'NO_ANSWER', t: issueLabel('NO_ANSWER'),
+        d: unsure
+          ? L(`Tu respuesta no deja claro si vas a ir (“${esc(unsure)}”). Sofía necesita saberlo para preparar la cena. Di sí o no, por ejemplo: “¡Sí, estaré ahí el domingo!” o “Lo siento, no podré ir el domingo.”`, `Your reply does not make clear whether you will go (“${esc(unsure)}”). Sofía needs to know so she can plan the dinner. Say yes or no, for example: “Yes, I will be there on Sunday!” or “Sorry, I can’t come on Sunday.”`)
+          : L('Sofía te preguntó si quieres ir a cenar el domingo, pero tu correo no dice si vas a ir. Escríbelo claramente, por ejemplo: “¡Sí, estaré ahí el domingo!” o “Lo siento, no podré ir el domingo.”', 'Sofía asked if you want to come for dinner on Sunday, but your email does not say whether you will go. Say it clearly, for example: “Yes, I will be there on Sunday!” or “Sorry, I can’t come on Sunday.”'),
+      }
       : topic
-        ? { ok: true, t: L('Respuesta a su pregunta', 'Answer to her question'), d: L(`Contestaste su pregunta sobre la cena del domingo (“${said}”).${futureNote} Así Sofía sabe qué esperar.`, `You answered her question about Sunday dinner (“${said}”).${futureNote} Now Sofía knows what to expect.`) }
-        : { ok: true, t: L('Respuesta a su pregunta', 'Answer to her question'), d: L(`Contestaste su pregunta (“${said}”).${futureNote} Para que quede aún más claro, menciona la cena o el domingo, por ejemplo: ${example}`, `You answered her question (“${said}”).${futureNote} To make it even clearer, mention the dinner or Sunday, for example: ${example}`) });
+        ? { ok: true, t: L('Respuesta a su pregunta', 'Answer to her question'), d: L(`Contestaste su pregunta sobre la cena del domingo (“${said}”).${notes} Así Sofía sabe qué esperar.`, `You answered her question about Sunday dinner (“${said}”).${notes} Now Sofía knows what to expect.`) }
+        : { ok: true, t: L('Respuesta a su pregunta', 'Answer to her question'), d: L(`Contestaste su pregunta (“${said}”).${notes} Para que quede aún más claro, menciona la cena o el domingo, por ejemplo: ${example}`, `You answered her question (“${said}”).${notes} To make it even clearer, mention the dinner or Sunday, for example: ${example}`) });
   }
 
   if (isBoss) {
