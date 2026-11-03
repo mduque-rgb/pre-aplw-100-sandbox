@@ -248,3 +248,23 @@
 .m-mission.m-flash{animation:mission-flash 1.2s ease-out 2}
 @keyframes mission-flash{0%,100%{box-shadow:0 6px 18px rgba(234,88,12,.28)}50%{box-shadow:0 0 0 .5em rgba(234,88,12,.45)}}
 @media (prefers-reduced-motion:reduce){.m-mission.m-flash{animation:none;outline:3px solid #ea580c}}
+
+/* ---------- Step 3: detective game ---------- */
+.m-detective{border:3px solid #ea580c;background:#ffedd5;color:#7c2d12;border-radius:.9em;padding:.8em 1em;margin:.2em 0 1em;max-width:62ch}
+.m-detective b{color:#9a3412}
+.page .m-detective p{margin:0 0 .55em;max-width:none}
+.page .m-detective p:last-child{margin:0}
+.ph-head{display:flex;align-items:center;gap:.6em .9em;flex-wrap:wrap;margin-bottom:.55em}
+.page .m-detective .ph-head p{flex:1;min-width:16em;margin:0}
+.ph-head:last-child{margin-bottom:0}
+.page .m-detective .ph-note{background:#fff;color:var(--app-fg);border-radius:.6em;padding:.5em .75em;line-height:1.45}
+.page .m-detective .ph-note:empty{display:none}
+.page .m-detective .ph-next{font-weight:600}
+/* Every part of the email can be tapped. A light dashed outline shows it on hover and focus, without giving away which parts are signs. */
+.ph-seg{cursor:pointer;border-radius:.3em;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background-color .15s}
+.ph-seg:hover{background:#eef2ff;outline:1px dashed #94a3c4}
+.ph-seg:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ph-seg.found,.ph-seg.found:hover{background:#dcfce7;color:#14532d;outline:2px solid #16a34a}
+.ph-seg.found::after{content:"\00a0\2713";font-weight:700}
+.page .m-mission p.m-hint{flex-basis:100%}
+@media (prefers-reduced-motion:reduce){.ph-seg{transition:none}}

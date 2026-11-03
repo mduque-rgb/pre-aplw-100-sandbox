@@ -99,8 +99,15 @@ export const SOFIA_OK = 'Hola Sofía,\n\nSí, estaré ahí el domingo para la ce
 export const BOSS_OK = 'Estimada Laura:\n\nQuisiera pedirle el viernes 24 de octubre libre porque tengo una cita médica.\n\nSaludos cordiales,\nAna López';
 export const CLIENT_OK = 'Estimado Carlos:\n\nLe adjunto la factura n.º 1045.\n\nSaludos cordiales,\nAna López';
 
-/** Steps 1–3: read three messages, delete two, report the phishing email. */
-export async function doInboxSteps(page) {
+/** Step 3: taps every warning sign of the open fake email (6 signs, numbered 0–5). */
+export async function findAllSigns(page) {
+  for (let sign = 0; sign < 6; sign++) {
+    await page.locator(`.ph-seg[data-sign="${sign}"]`).first().click();
+  }
+}
+
+/** Steps 1–2: read three messages and delete two. */
+export async function doReadAndDelete(page) {
   for (const subject of ['Recordatorio: clase de correo electrónico esta noche', 'Tu parcela gratis del huerto está lista', 'Recordatorio de tu cita del jueves']) {
     await openMessage(page, subject);
     await act(page, 'back');
@@ -112,12 +119,15 @@ export async function doInboxSteps(page) {
     await act(page, 'del');
   }
   await expect(page.locator('.m-mission')).toContainText('Paso 3 de 7');
+}
+
+/** Steps 1–3: read three messages, delete two, find the fake email's warning signs and report it. */
+export async function doInboxSteps(page) {
+  await doReadAndDelete(page);
 
   await openMessage(page, '¡¡¡GANASTE una tarjeta de regalo de $500!!! Reclámala hoy');
+  await findAllSigns(page);
   await act(page, 'spam');
-  await page.getByRole('checkbox', { name: 'Tiene prisa o una fecha límite' }).check();
-  await page.getByRole('checkbox', { name: 'Creo que me pide información personal' }).check();
-  await act(page, 'mr-next');
   await expect(page.locator('.fb-mission').first()).toContainText('¡Paso 3 completado!');
   await act(page, 'mr-close');
   await expect(page.locator('.m-mission')).toContainText('Paso 4 de 7');

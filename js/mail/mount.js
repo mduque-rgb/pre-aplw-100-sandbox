@@ -33,6 +33,7 @@ export function mountMail(page, address) {
     </section>
     <div class="m-compose" id="m-compose" hidden></div>
     <div class="m-toast" id="m-toast" role="status" aria-live="polite" hidden></div>
+    <div class="sr-only" id="m-say" role="status" aria-live="polite"></div>
     <div class="m-fb-back" id="m-fb" hidden></div>
   </div>`;
 
@@ -43,6 +44,11 @@ export function mountMail(page, address) {
   root.addEventListener('keydown', (event) => {
     const target = /** @type {HTMLElement} */ (event.target);
     if (event.key === 'Enter' && target.classList.contains('m-row')) target.click();
+    // Step 3: the parts of an email are tappable spans, so they also answer to Enter and Space.
+    if ((event.key === 'Enter' || event.key === ' ') && target.classList.contains('ph-seg')) {
+      event.preventDefault();
+      target.click();
+    }
     if (event.key === 'Escape') {
       if (reportIsOpen()) closeReport(false);
       else if (!$m('m-fb').hidden) hideFb();

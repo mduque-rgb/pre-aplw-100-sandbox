@@ -17,7 +17,7 @@ const MAX_AGE_MS = 12 * 60 * 60 * 1000;
  * @property {import('./types.js').MailMessage[]} msgs
  * @property {number} nextId
  * @property {number[]} misreported
- * @property {Omit<import('./types.js').MissionState, 'read'|'deleted'> & {read: number[], deleted: number[]}} mission
+ * @property {Omit<import('./types.js').MissionState, 'read'|'deleted'|'found'> & {read: number[], deleted: number[], found?: number[]}} mission
  */
 
 function storage() {
@@ -37,7 +37,7 @@ export function snapshot() {
     msgs: mail.msgs,
     nextId: mail.nextId,
     misreported: [...(mail.misreported || [])],
-    mission: { ...mission, read: [...mission.read], deleted: [...mission.deleted] },
+    mission: { ...mission, read: [...mission.read], deleted: [...mission.deleted], found: [...mission.found] },
   };
 }
 
@@ -86,6 +86,8 @@ export function restoreProgress(saved) {
     ...saved.mission,
     read: new Set(saved.mission.read),
     deleted: new Set(saved.mission.deleted),
+    // Saves from before the detective game have no found signs.
+    found: new Set(saved.mission.found || []),
   };
 }
 

@@ -12,6 +12,8 @@ export function resetPractice(message) {
   mail.open = null;
   mail.sel = new Set();
   mail.ask = null;
+  mail.inspect = null;
+  mail.findHint = false;
   mail.q = '';
   /** @type {HTMLInputElement} */ ($m('m-q')).value = '';
   closeCompose();

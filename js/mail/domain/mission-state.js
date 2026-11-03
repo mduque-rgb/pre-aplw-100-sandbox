@@ -11,6 +11,7 @@ export function newMission() {
     step: STEP.READ_NEW,
     read: new Set(),
     deleted: new Set(),
+    found: new Set(),
     done: false,
     replay: null,
     log,
@@ -53,6 +54,17 @@ export function withDeleted(mission, ids) {
   const deleted = new Set(mission.deleted);
   ids.forEach((id) => deleted.add(id));
   return deleted.size === mission.deleted.size ? mission : { ...mission, deleted };
+}
+
+/**
+ * Step 3: the learner found a warning sign of the fake email.
+ * @param {import('../types.js').MissionState} mission
+ * @param {number} sign
+ * @returns {import('../types.js').MissionState}
+ */
+export function withFound(mission, sign) {
+  if (mission.found.has(sign)) return mission;
+  return { ...mission, found: new Set([...mission.found, sign]) };
 }
 
 /**

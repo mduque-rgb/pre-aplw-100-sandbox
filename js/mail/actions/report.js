@@ -6,6 +6,7 @@ import { CATEGORIES, categoryOf, issueLabel } from '../domain/issues.js';
 import { canReplay } from '../domain/mission-state.js';
 import { mail } from '../state.js';
 import { ALL_STEPS, STEP } from '../mission-steps.js';
+import { SIGN_COUNT } from '../data/phishing.js';
 
 const REPORT_CSS = `.rp-who{margin:0 0 .4em;font-size:1.05em}
 body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1f2430;background:#fff;max-width:48em;margin:0 auto;padding:1.5em 1.2em;line-height:1.45}
@@ -185,8 +186,8 @@ export function showReport() {
       ? L(`Borraste ${mission.deleted.size} correos.`, `You deleted ${mission.deleted.size} emails.`)
       : step === STEP.REPORT_PHISH
         ? (log[STEP.REPORT_PHISH].early
-          ? L('Lo reportaste como spam incluso antes de llegar a este paso. ¡Muy bien!', 'You reported it as spam even before reaching this step. Well done!')
-          : L('Encontraste el correo falso y lo reportaste como spam.', 'You found the fake email and reported it as spam.'))
+          ? L(`Lo reportaste como spam incluso antes de llegar a este paso, y luego descubriste sus ${SIGN_COUNT} señales de alerta. ¡Muy bien!`, `You reported it as spam even before reaching this step, then uncovered its ${SIGN_COUNT} warning signs. Well done!`)
+          : L(`Encontraste el correo falso, descubriste sus ${SIGN_COUNT} señales de alerta y lo reportaste como spam.`, `You found the fake email, uncovered its ${SIGN_COUNT} warning signs and reported it as spam.`))
         : step === STEP.SIGN_OUT
           ? L(
             `Cerraste tu sesión con “Sign out” y confirmaste${triesOf(step) > 1 ? ` (tocaste “Sign out” ${triesOf(step)} veces)` : ''}.`,
@@ -196,11 +197,14 @@ export function showReport() {
             ? L('Lo enviaste una vez y quedó completo.', 'You sent it once and it was complete.')
             : L(`Lo enviaste ${triesOf(step)} veces hasta completarlo.`, `You sent it ${triesOf(step)} times until it was complete.`);
 
+  const signsSoFar = () => L(`Llevas ${mission.found.size} de ${SIGN_COUNT} señales de alerta encontradas.`, `You have found ${mission.found.size} of ${SIGN_COUNT} warning signs so far.`);
   const currentDetail = (step) => step === STEP.READ_NEW
     ? L(`Estás en este paso. Llevas ${correos(mission.read.size, 'nuevo leído', 'nuevos leídos')}.`, `You are on this step. You have read ${emails(mission.read.size, 'new email')} so far.`)
     : step === STEP.DELETE_OLD
       ? L(`Estás en este paso. Llevas ${correos(mission.deleted.size, 'borrado', 'borrados')}.`, `You are on this step. You have deleted ${emails(mission.deleted.size, 'email')} so far.`)
-      : log[step].tries
+      : step === STEP.REPORT_PHISH
+        ? `${L('Estás en este paso.', 'You are on this step.')} ${signsSoFar()}`
+        : log[step].tries
         ? L(`Estás en este paso. Llevas ${log[step].tries} ${intentos(log[step].tries)}.`, `You are on this step. ${log[step].tries} ${intentos(log[step].tries)} so far.`)
         : L('Estás en este paso. Todavía no lo has intentado.', 'You are on this step. You have not tried it yet.');
 

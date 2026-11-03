@@ -123,10 +123,10 @@ test('correos falsos distintos: el del banco tiene sus propias pistas', async ({
 
   await expect(page.locator('.m-row', { hasText: 'Centro de Premios' })).toHaveCount(0);
   await openMessage(page, 'URGENTE: Tu cuenta ha sido BLOQUEADA');
+  // Steps 1–2 are not done, so the email reads like any other: no detective game yet.
+  await expect(page.locator('.ph-seg')).toHaveCount(0);
   await act(page, 'spam');
-  await page.getByRole('checkbox', { name: 'Creo que me pide información personal' }).check();
-  await act(page, 'mr-next');
-  await expect(page.locator('.m-fb')).toContainText('Tu banco nunca te pide eso por correo');
+  await expect(page.locator('.m-fb')).toContainText('En el paso 3 lo vas a investigar');
 });
 
 test('cerrar el navegador sin cerrar sesión aparece en “En qué enfocarte”', async ({ page }) => {
