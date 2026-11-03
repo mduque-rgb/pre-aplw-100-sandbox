@@ -19,15 +19,23 @@ const FUT_FIND = new RegExp(String.raw`\b(?:${FUT_NO}|${FUT_YES})\b`);
 const YES_RE = new RegExp(String.raw`\b(si|yes|yeah|yep|sure|claro|por supuesto|desde luego|of course|ok|okay|vale|absolutely|definitely|me encantaria|me encanta|con gusto|with pleasure|i would love|i'd love|count me in|nos vemos (?:el domingo|alli|ahi|entonces)|sounds (?:good|great|wonderful|lovely|perfect)|${FUT_YES})\b`);
 const NO_RE = new RegExp(String.raw`\b(${FUT_NO}|no puedo|no me es posible|can't|cannot|can not|won't|will not|unable|lo siento|sorry|otro dia|another time|next time|la proxima)\b`);
 const TOPIC_RE = /\b(cena|cenar|domingo|dinner|sunday|sopa|soup|tu casa|your house|come over|ir a cenar)\b/;
-const WORDS = new Set(('a i y o e u yo tu el ella mi me te se le lo la los las un una unos unas de del al en con por para sin sobre que y pero si no ya muy mas menos tan bien mal hoy manana ayer aqui alli ahi este esta esto ese esa eso como cuando donde porque gracias hola adios saludos abrazo abrazos beso besos carino amor amiga amigo querida querido sofia sofi tom domingo sabado lunes cena cenar comida sopa casa tu tus su sus nuestro voy ire vamos ir puedo podre quiero quieres claro encanta encantaria gusta gusto nos vemos hasta pronto luego entonces llevo llevar llevare postre pan vino fotos foto lago picnic favorita bonita bonitas lindas lindo me gustaron gusto mucho muchas muchos todo todos toda todas tambien hora horas que se sera es son estoy esta estas estoy feliz contenta contento ver verte vernos invitacion invitarme invitar dia dias tarde tardes noche noches buenos buenas siempre nunca seguro segura perfecto perfecta '
-  + 'hi hello hey dear yes yeah sure no not ok okay thanks thank you your yours my me we us our see soon love best regards cheers sincerely take care bye goodbye sunday saturday monday dinner soup house home come came coming over will would love like liked be been being there here the a an and but or so to too also of for from with at on in by it its is are was were am do does did can cant cannot sorry next time another day night evening morning afternoon photos photo picture pictures lake picnic favorite beautiful nice great good wonderful lovely perfect sounds sound bring bringing dessert bread wine cake what when where why how who that this these those then than them they he she him her his hers just very much many lot lots really all any some one two three four five six seven eight nine ten together another other others whatever wherever however something nothing everything anything someone everyone always never maybe today tonight tomorrow yesterday week weekend friend friends family know think hope wait cant have has had get got go going went make made happy glad excited invite invitation inviting thought thoughts wish wishes after before about again only still well already'
+// Known words, per language. They tell a signature name from ordinary words, and they are the
+// pieces the glued-words check may split a token into (always within one language).
+const WORDS_ES = new Set(('a y o e u yo tu el ella mi me te se le lo la los las un una unos unas de del al en con por para sin sobre que y pero si no ya muy mas menos tan bien mal hoy manana ayer aqui alli ahi este esta esto ese esa eso como cuando donde porque gracias hola adios saludos abrazo abrazos beso besos carino amor amiga amigo querida querido sofia sofi tom domingo sabado lunes cena cenar comida sopa casa tu tus su sus nuestro voy ire vamos ir puedo podre quiero quieres claro encanta encantaria gusta gusto nos vemos hasta pronto luego entonces llevo llevar llevare postre pan vino fotos foto lago picnic favorita bonita bonitas lindas lindo me gustaron gusto mucho muchas muchos todo todos toda todas tambien hora horas que se sera es son estoy esta estas estoy feliz contenta contento ver verte vernos invitacion invitarme invitar dia dias tarde tardes noche noches buenos buenas siempre nunca seguro segura perfecto perfecta '
+  + 'ellos ellas usted ustedes nosotros conmigo contigo sino tuya tuyo tuyas tuyos dame deme dime dele media medio medias mismo misma nota notas tema temas mesa sido ahora ademas malo mala favor libre libres '
+  + 'factura adjunto archivo correo mensaje asunto jefa jefe cliente cita trabajo oficina semana viernes jueves miercoles martes necesito quisiera podria pedir envio mando estare estamos tengo tiene'
 ).split(/\s+/));
+const WORDS_EN = new Set(('i hi hello hey dear yes yeah sure no not ok okay thanks thank you your yours my me we us our see soon love best regards cheers sincerely take care bye goodbye sunday saturday monday dinner soup house home come came coming over will would love like liked be been being there here the a an and but or so to too also of for from with at on in by it its is are was were am do does did can cant cannot sorry next time another day night evening morning afternoon photos photo picture pictures lake picnic favorite beautiful nice great good wonderful lovely perfect sounds sound bring bringing dessert bread wine cake what when where why how who that this these those then than them they he she him her his hers just very much many lot lots really all any some one two three four five six seven eight nine ten together another other others whatever wherever however something nothing everything anything someone everyone always never maybe today tonight tomorrow yesterday week weekend friend friends family know think hope wait cant have has had get got go going went make made happy glad excited invite invitation inviting thought thoughts wish wishes after before about again only still well already '
+  + 'note notes late later idea area side site media theme queen formal forget forgot invoice attached attach file manager client work office request reason appointment friday thursday wednesday tuesday need '
+  + 'panel parade estate versus delete candid convoy washer gotten hasten siesta mediate denote notate envoy'
+).split(/\s+/));
+const WORDS = new Set([...WORDS_ES, ...WORDS_EN]);
 
-const ATT_MENTION_RE = /\b(adjunt\w*|attach\w*|enclosed|please find|le envio|te envio|les envio|le mando|te mando|aqui (?:esta|le envio|tiene)|here is|here's)\b/;
-const DAYOFF_RE = /\b(dia libre|libre|dia de descanso|dia de permiso|permiso|ausentarme|ausencia|faltar|librar|tomar(?:me)? (?:el|un|este|ese|ese) dia|pedir(?:le)? (?:el|un) dia|no (?:podre|puedo|voy a poder|voy a|ire a|vendre a) ?(?:ir|venir|trabajar|asistir)?|no (?:ire|vendre|trabajare|asistire)|(?:take|have|get|request) (?:\w+ ){0,3}off|vacaciones|day off|days off|time off|a leave|leave of absence|take (?:the|a|this|that|next) (?:day|\w+day)|be off|be absent|miss work|personal day|vacation|pto)\b/;
-const POLITE_RE = /\b(quisiera|me gustaria|podria|seria posible|es posible|le pido|le solicito|solicito|le agradeceria|agradeceria|por favor|would like|i'd like|could i|may i|can i|would it be possible|is it possible|i would appreciate|i'd appreciate|i am writing to ask|i'm writing to ask|please)\b/;
+const ATT_MENTION_RE = /\b(adjunt\w*|attach\w*|enclosed|please find|le envio|te envio|les envio|le mando|te mando|le (?:remito|comparto|hago llegar)|te (?:remito|comparto)|aqui (?:esta|le envio|tiene)|here is|here's|here you (?:have|go)|(?:i'm|i am|we're|we are) sending|send(?:ing)? you|sent you|you(?:'ll| will) find)\b/;
+const DAYOFF_RE = /\b(dia libre|libre|dia de descanso|dia de permiso|dia personal|permiso|ausentarme|ausencia|faltar|librar|tomar(?:me)? (?:el|un|este|ese|ese) dia|pedir(?:le)? (?:el|un) dia|no (?:podre|puedo|voy a poder|voy a|ire a|vendre a) ?(?:ir|venir|trabajar|asistir)?|no (?:ire|vendre|trabajare|asistire)|(?:take|have|get|request|ask for|asking for|need|want|would like|i'd like) (?:\w+ ){0,3}off|\w+day off|vacaciones|day off|days off|time off|a leave|leave of absence|take (?:the|a|this|that|next) (?:day|\w+day)|be off|be absent|be away|miss work|(?:won't|will not|can't|cannot|can not) (?:be able to )?(?:come (?:in|to work)|work|be at work|go to work)|personal day|vacation|pto)\b/;
+const POLITE_RE = /\b(quisiera|me gustaria|podria|seria posible|es posible|le pido|le solicito|solicito|le agradeceria|agradeceria|por favor|le importaria|seria tan amable|me permitiria|would like|i'd like|could i|may i|can i|could you|would you|would it be possible|is it possible|i would appreciate|i'd appreciate|i would be grateful|i was wondering|i am writing to ask|i'm writing to ask|kindly|please)\b/;
 const DATE_RE = /\b((?:lunes|martes|miercoles|jueves|viernes|sabado|domingo)(?: \d{1,2}(?: de (?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre))?)?|(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:,? (?:(?:january|february|march|april|may|june|july|august|september|october|november|december) )?\d{1,2}(?:st|nd|rd|th)?)?|pasado manana|manana|tomorrow|(?:\d{1,2} de )?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?: \d{1,2})?|(?:january|february|march|april|june|july|august|september|october|november|december)(?: \d{1,2}(?:st|nd|rd|th)?)?|may \d{1,2}|\d{1,2}\/\d{1,2}(?:\/\d{2,4})?|\d{1,2}(?:st|nd|rd|th)|next week|la proxima semana|la semana que viene)\b/;
-const REASON_RE = /\b(porque|ya que|debido|cita|medic\w*|doctor|dentista|hospital|familia\w*|hij[oa]s?|madre|padre|mama|papa|nieto|boda|funeral|entierro|mudanza|tramite|asuntos? personales?|motivos? personales?|enferm\w*|because|due to|since|appointment|family|wedding|funeral|moving|personal reasons?|sick|doctor's)\b/;
+const REASON_RE = /\b(porque|ya que|debido|cita|consulta|medic\w*|doctor|dentista|hospital|cirugia|operacion|familia\w*|hij[oa]s?|nin[oa]s?|madre|padre|mama|papa|espos[oa]|marido|abuel[oa]s?|niet[oa]s?|escuela|colegio|juzgado|boda|funeral|entierro|mudanza|tramite|asuntos? personales?|motivos? personales?|enferm\w*|because|due to|since|appointment|medical|dentist|surgery|operation|family|sons?|daughters?|child|children|kids?|baby|mother|father|mom|mum|dad|parents?|husband|wife|grand(?:son|daughter|child|children|mother|father|ma|pa)s?|school|court|wedding|funeral|moving|personal (?:reasons?|matters?)|sick|unwell|illness|doctor's)\b/;
 const INFORMAL_BYE_RE = /\b(besos?|un beso|besitos|xoxo|love|lots of love|hugs?|kisses|te quiero|abrazos?|abrazote|un abrazo|carinos?|con carino)\b/;
 
 function isNameLine(line) {
@@ -47,24 +55,54 @@ function isNameLine(line) {
   });
 }
 
-function segment(token) {
-  const shortWords = new Set(['i', 'a', 'y', 'o', 'yo', 'tu', 'mi', 'te', 'me', 'la', 'el', 'de', 'en', 'si', 'ya', 'no', 'my', 'we']);
-  const isWord = (word) => WORDS.has(word) && (word.length >= 3 || shortWords.has(word));
-  const best = new Array(token.length + 1).fill(null);
-  best[0] = [];
+// Short words that may be a piece of a glued token (“sivoy” → “si voy”, “iwill” → “i will”).
+// Other one- and two-letter words are never pieces, and a split uses at most one short piece:
+// too many real words start or end with them (idea, theme, often, delete).
+const SHORT_PARTS_ES = new Set(['yo', 'tu', 'mi', 'te', 'me', 'la', 'el', 'de', 'en', 'si', 'ya', 'no']);
+const SHORT_PARTS_EN = new Set(['i', 'my', 'we', 'no']);
+const MIN_GLUED = 5;
+const MAX_PARTS = 3;
 
-  for (let end = 1; end <= token.length; end++) {
-    for (let start = 0; start < end; start++) {
-      if (best[start] && isWord(token.slice(start, end)) && (!best[end] || best[start].length + 1 < best[end].length)) {
-        best[end] = [...best[start], token.slice(start, end)];
+// English writes many real words as one (anyone, someday, overall, weekday): never split those.
+const EN_COMPOUND_RE = /^(?:any|some|every|no|over|after|under|out|up|with|where|there|here|what|who|how|home|week|day|night|good|tea|lake|wine|house|for|fore|be|in)[a-z]{2,}$|^[a-z]{2,}(?:one|body|thing|where|how|when|why|what|time|times|day|days|self|selves|ever|side|like|some|ward|wards|more|less|ness|house|land|made)$/;
+
+/**
+ * Splits a token into 2–3 known words of one language,
+ * or returns null when it is not clearly two words stuck together.
+ * @param {string} token folded, lower case
+ * @returns {string[]|null}
+ */
+function segment(token) {
+  if (token.length < MIN_GLUED) return null;
+
+  const split = (words, short) => {
+    const isPart = (word) => words.has(word) && (word.length >= 3 || short.has(word));
+    const best = new Array(token.length + 1).fill(null);
+    best[0] = [];
+
+    for (let end = 1; end <= token.length; end++) {
+      for (let start = 0; start < end; start++) {
+        if (best[start] && isPart(token.slice(start, end)) && (!best[end] || best[start].length + 1 < best[end].length)) {
+          best[end] = [...best[start], token.slice(start, end)];
+        }
       }
     }
-  }
 
-  return best[token.length] && best[token.length].length >= 2 ? best[token.length] : null;
+    const parts = best[token.length];
+    const shortCount = parts ? parts.filter((part) => part.length < 3).length : 0;
+    return parts && parts.length >= 2 && parts.length <= MAX_PARTS && shortCount <= 1 ? parts : null;
+  };
+
+  return split(WORDS_ES, SHORT_PARTS_ES) || (EN_COMPOUND_RE.test(token) ? null : split(WORDS_EN, SHORT_PARTS_EN));
 }
 
-function findGlued(text, limit = 3) {
+// Email addresses, web addresses and domains have no spaces on purpose (ana.perez@gmail.com, www.example.com).
+const ADDRESS_RE = /\S+@\S+|\b(?:https?:\/\/|www\.)\S+|\b[\w-]+(?:\.[\w-]+)*\.(?:com|org|net|edu|gov|es|mx|co|us|io|info|example)\b/gi;
+// A signature line with only contact details: “ana.perez@gmail.com”, “Tel: 555-123-4567”, “www.example.com”.
+const CONTACT_LINE_RE = /^(?:(?:tel|phone|telefono|tlf|cel|cell|celular|mobile|movil|email|e-mail|correo|web)\.?\s*:?\s*)?(?:\S+@\S+|(?:https?:\/\/|www\.)\S+|[\w-]+(?:\.[\w-]+)*\.(?:com|org|net|edu|gov|es|mx|co|us|io|info|example)|\+?[\d\s().-]{7,})$/i;
+
+function findGlued(rawText, limit = 3) {
+  const text = rawText.replace(ADDRESS_RE, ' ');
   const results = [];
   const seen = new Set();
   const add = (bad, fix) => {
@@ -130,6 +168,8 @@ export function writingChecks(own, mode) {
 
   const items = [];
   const lines = fixed.split('\n').map((line) => line.trim()).filter(Boolean);
+  // Contact details under the name are part of the signature, not the last line of the message.
+  while (lines.length > 1 && CONTACT_LINE_RE.test(lines[lines.length - 1])) lines.pop();
   const lower = fold(fixed);
   const quote = (match) => esc(fixed.slice(match.index, match.index + match[0].length));
   const first = fold(lines[0] || '');

@@ -157,6 +157,8 @@ Unit tests cover:
 * Immutable message transitions.
 * Mission state tracking and logging.
 * Writing evaluation rules for Sofía, the manager, and the client.
+* Every example sentence the feedback suggests, in both languages, passes its own checks (`tests/suggested-examples.test.js`). Add new examples there.
+* Real words in both languages (late, note, anyone, sino, tuya…) and email addresses are never reported as glued words, while real mistakes (sivoy, thankyou) still are.
 * Analysis of subject lines, email bodies, and attachments.
 * The issue catalog: every warning maps to a report category.
 
