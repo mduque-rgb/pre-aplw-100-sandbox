@@ -57,6 +57,7 @@
  * @property {number} step
  * @property {Set<number>} read
  * @property {Set<number>} deleted
+ * @property {Set<number>} found  Step 3: warning signs of the fake email the learner has found (see data/phishing.js SIGN).
  * @property {boolean} done
  * @property {{step: number, returnTo: number, wasDone: boolean}|null} [replay]  Extra practice of a finished step.
  * @property {Record<number, MissionLogEntry>} log
@@ -79,6 +80,8 @@
  * @property {Set<number>} misreported
  * @property {ComposeDraft|null} retryDraft
  * @property {{id: number, phishDone: boolean, step: number}|null} mr
+ * @property {{id: number, note: string, misses: number}|null} inspect  Step 3: the message under the email being inspected and the normal taps in a row. Not saved.
+ * @property {boolean} findHint  Step 3: the learner asked for a hint to find the fake email. Not saved.
  */
 
 /**

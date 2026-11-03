@@ -21,7 +21,8 @@ Instructions, tips, the report and the practice emails themselves can be shown i
 - Seven-step guided mission with visible progress tracking and a **“See my progress”** report available at any moment, so learners who stop early still get one. The report fills the tablet screen, with a close button (✕) that returns to the current step and a “Continue with step N” button that opens what the step needs next.
 - Finished writing steps (4–6) can be **practised again** from the report.
 - Writing feedback: greeting, subject line, sign-off, clarity, politeness, date, purpose, attachments, spacing, and overly long sentences. A vague subject is shown as a tip and never blocks a step.
-- Three different phishing emails (prize, bank, parcel), one per practice, each with its own warning signs. Add `?phish=prize|bank|package` to the address to choose one.
+- **Detective game for phishing (step 3):** learners find the fake email themselves, then tap the parts that look suspicious. Each of the six warning signs (odd sender, a prize or threat, shouting capitals, hurry, a request for private data and a suspicious link) lights up when found, with a short explanation and a “You found 2 of 6” count. Normal parts answer “That looks normal, keep looking”, and after three in a row a hint points to a missing sign. Real emails can be inspected too, so opening one does not give the game away. The step completes once every sign is found and the email is reported as spam, in either order.
+- Three different phishing emails (prize, bank, parcel), one per practice, each with its own wording of the signs. Add `?phish=prize|bank|package` to the address to choose one. The signs and the exact text that counts for each live in `js/mail/data/phishing.js`; unit tests check that every one can be tapped in both languages.
 - Final report with statistics, areas for improvement, HTML download, copy-to-clipboard option, and a reset feature.
 - Reading options: instructions language (Español/English), text size (100–150 %) and **Listen**, which reads the current instruction aloud with the browser's voice.
 - Progress is saved in the browser, so a reload does not lose the practice.
@@ -78,7 +79,7 @@ These are fictitious, public credentials. Do not enter real credentials.
 
 1. Read three new emails.
 2. Delete two emails that are no longer needed.
-3. Identify and report a phishing email.
+3. Find the phishing email, uncover its six warning signs and report it as spam.
 4. Reply to Sofía's email.
 5. Request a day off from the manager using a formal email.
 6. Send the correct invoice to a client.
@@ -161,6 +162,7 @@ Unit tests cover:
 * Real words in both languages (late, note, anyone, sino, tuya…) and email addresses are never reported as glued words, while real mistakes (sivoy, thankyou) still are.
 * Analysis of subject lines, email bodies, and attachments.
 * The issue catalog: every warning maps to a report category.
+* The phishing detective game: every warning sign of every fake email can be tapped in both languages, and the email text is split without losing a character.
 
 End-to-end tests complete the mission on tablet and desktop screens, once perfectly and once with typical mistakes, and compare the final report against snapshots in `e2e/__snapshots__/`. If you change report wording on purpose, update them with `npx playwright test --update-snapshots` and review the diff.
 

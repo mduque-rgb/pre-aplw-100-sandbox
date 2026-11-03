@@ -25,6 +25,7 @@ import {
   restoreMsgs,
 } from './messages.js';
 import { copyReport, downloadReport, showReport } from './report.js';
+import { askFindHint, askHint, reopenPhish, tapPiece } from './inspect.js';
 import { withReplay } from '../domain/mission-state.js';
 import { L } from '../../shared/i18n.js';
 import { resetPractice } from './reset.js';
@@ -278,17 +279,19 @@ export function mailClick(event) {
       hideCoach('body');
       sendMail();
       break;
-    case 'mission-phish': {
-      const phish = mail.msgs.find((message) => message.warn);
-      if (!phish) break;
-      logHelp(STEP.REPORT_PHISH, { es: 'Pediste ver cuál era el correo falso', en: 'You asked to see which email was fake' }, 'phish');
-      mail.msgs = patchMessage(mail.msgs, phish.id, { unread: false });
-      mail.open = phish.id;
-      mail.ask = null;
-      drawSide();
-      drawMain();
+    case 'ph-tap':
+      tapPiece(element);
       break;
-    }
+    case 'ph-hint':
+      askHint();
+      break;
+    case 'ph-reopen':
+      nextReason();
+      reopenPhish();
+      break;
+    case 'mission-find-hint':
+      askFindHint();
+      break;
     case 'mission-open': {
       const sofia = mail.msgs.find(isSofia);
       if (!sofia) break;

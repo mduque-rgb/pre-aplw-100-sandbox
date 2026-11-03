@@ -64,12 +64,10 @@ Reportar un correo falso
 1 intento
 ★ A la primera
 
-Encontraste el correo falso y lo reportaste como spam.
+Encontraste el correo falso, descubriste sus 6 señales de alerta y lo reportaste como spam.
 
 No tuviste nada que corregir.
 
-Ayudas y redirecciones
-Explicaste por qué lo reportaste: tiene prisa o una fecha límite; creo que me pide información personal
 4
 Responder a Sofía
 ✓ Completado

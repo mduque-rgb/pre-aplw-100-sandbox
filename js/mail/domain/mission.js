@@ -1,7 +1,7 @@
 import { ic } from '../../shell/icons.js';
-import { L, tx } from '../../shared/i18n.js';
+import { L } from '../../shared/i18n.js';
 import { CONTACTS } from '../contacts.js';
-import { phishingById } from '../data/phishing.js';
+import { SIGN_COUNT } from '../data/phishing.js';
 import { DELETE_GOAL, READ_GOAL } from '../mission-goals.js';
 import { mail, phishMsg, sofiaMsg } from '../state.js';
 import { mailToast } from '../ui/toast.js';
@@ -78,16 +78,24 @@ function missionBody() {
 
   if (mission.step === STEP.REPORT_PHISH) {
     const phish = phishMsg();
+    const found = mission.found.size;
     const where = !phish
       ? L('Ese correo ya no está. Toca “Reset practice inbox” para traerlo de vuelta.', 'That email is gone. Tap “Reset practice inbox” to bring it back.')
       : phish.folder === 'trash'
-        ? L('Lo borraste y ahora está en la Papelera (Trash). Ábrelo, toca “Restore” y luego repórtalo desde tu bandeja.', 'You deleted it and now it is in the Trash. Open it, tap “Restore” and then report it from your inbox.')
-        : L('Toca <b>“Report spam”</b> (Reportar spam) en su fila, o ábrelo y toca “Report spam”. No lo respondas ni toques nada dentro del correo.', 'Tap <b>“Report spam”</b> in its row, or open it and tap “Report spam”. Don’t reply or tap anything inside the email.');
-    const clues = tx(phishingById(phish?.phishId).clues);
+        ? L('Lo borraste y ahora está en la Papelera (Trash). Ábrelo, toca “Restore” y luego ábrelo otra vez desde tu bandeja para investigarlo.', 'You deleted it and now it is in the Trash. Open it, tap “Restore” and then open it again from your inbox to investigate it.')
+        : phish.folder === 'spam'
+          ? L('Ya lo reportaste y está en la carpeta <b>Spam</b>. Ábrelo desde ahí y encuentra todas sus señales de alerta.', 'You already reported it and it is in the <b>Spam</b> folder. Open it from there and find all its warning signs.')
+          : L(
+            `Ábrelo y toca cada parte que te parezca sospechosa. Cuando encuentres las ${SIGN_COUNT} señales de alerta, toca <b>“Report spam”</b> (Reportar spam). No lo respondas.`,
+            `Open it and tap every part that looks suspicious. When you have found all ${SIGN_COUNT} warning signs, tap <b>“Report spam”</b>. Don’t reply to it.`,
+          );
+    const hint = phish && mail.findHint && phish.folder === 'inbox'
+      ? `<p class="m-hint">${L('<b>Pista:</b> busca un correo de alguien que no conoces, con un asunto que te promete algo o te asusta.', '<b>Hint:</b> look for an email from someone you don’t know, with a subject that promises you something or scares you.')}</p>`
+      : '';
     return `<div class="m-mission"><p>${L(
-      `<b>Paso 3 de 7: Reporta el correo falso.</b> En tu bandeja hay un correo trampa (<i>phishing</i>) que quiere robar tu información. Pistas para encontrarlo: ${clues}. ${where}`,
-      `<b>Step 3 of 7: Report the fake email.</b> Your inbox has a trap email (<i>phishing</i>) that wants to steal your information. Clues to find it: ${clues}. ${where}`,
-    )}</p>${phish ? `<button class="m-tbtn" type="button" data-act="mission-phish">${L('Mostrarme cuál es', 'Show me which one')}</button>` : ''}</div>`;
+      `<b>Paso 3 de 7: Sé detective.</b> En tu bandeja hay un correo trampa (<i>phishing</i>) que quiere robar tu información. Encuéntralo y descubre sus señales de alerta. ${where}`,
+      `<b>Step 3 of 7: Be a detective.</b> Your inbox has a trap email (<i>phishing</i>) that wants to steal your information. Find it and uncover its warning signs. ${where}`,
+    )}</p>${found ? `<span class="m-prog">${L('Señales encontradas', 'Signs found')}: ${found} ${L('de', 'of')} ${SIGN_COUNT}</span>` : ''}${hint}${phish && !mail.findHint && phish.folder === 'inbox' && !found ? `<button class="m-tbtn" type="button" data-act="mission-find-hint">${L('Dame una pista', 'Give me a hint')}</button>` : ''}</div>`;
   }
 
   const sofia = sofiaMsg();

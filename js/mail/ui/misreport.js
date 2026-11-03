@@ -1,7 +1,6 @@
 import { esc, $m } from '../../shared/dom.js';
-import { L, tx } from '../../shared/i18n.js';
+import { L } from '../../shared/i18n.js';
 import { ic } from '../../shell/icons.js';
-import { phishingById } from '../data/phishing.js';
 import { logHelp } from '../domain/mission.js';
 import { byId, mail } from '../state.js';
 
@@ -76,40 +75,6 @@ export function showMisreport(message, phishDone, step = mail.mission.step) {
   $m('m-fb').querySelector('input').focus();
 }
 
-function showPhishAnswer(message, picked) {
-  const phish = phishingById(message.phishId);
-  const seen = new Set(picked.flatMap((key) => (phish.reasons[key] ? phish.reasons[key].sign : [])));
-  const missed = phish.signs.filter((_, index) => !seen.has(index));
-
-  const item = (key) => {
-    const reason = phish.reasons[key];
-    const description = reason
-      ? tx(reason.t)
-      : key === 'mistake'
-        ? L('Esta vez el botón fue el correcto: este correo sí es falso. Repórtalo siempre que veas las señales de abajo.', 'This time it was the right button: this email really is fake. Report it whenever you see the signs below.')
-        : L('Gracias por pensarlo. Mira abajo las señales de alerta de este correo para reconocer otros parecidos.', 'Thanks for thinking about it. See the warning signs of this email below to recognise similar ones.');
-    return `<li class="fb-item ${reason ? 'ok' : 'info'}"><span class="fb-ic" aria-hidden="true"></span><div><b>${reasonLabel(key)}</b><div>${description}</div></div></li>`;
-  };
-
-  $m('m-fb').innerHTML = `<div class="m-fb" role="dialog" aria-modal="true" aria-labelledby="fb-h">
-    <div class="fb-top"><span class="fb-tick" aria-hidden="true">${ic('spam')}</span><h2 id="fb-h">${L('¡Bien hecho! Este correo sí era falso', 'Well done! This email really was fake')}</h2></div>
-    ${mail.mr.phishDone
-    ? `<p class="fb-mission">${L('<b>¡Paso 3 completado!</b> El correo se fue a la carpeta Spam y ya no está en tu bandeja de entrada.', '<b>Step 3 complete!</b> The email went to the Spam folder and is no longer in your inbox.')}</p>`
-    : `<p>${L('El correo se fue a la carpeta Spam y ya no está en tu bandeja de entrada.', 'The email went to the Spam folder and is no longer in your inbox.')}</p>`}
-    <p>${L('Este tipo de correo se llama <b>phishing</b> (suplantación): alguien finge ser otra persona o empresa para robar tu información. Esto es lo que marcaste:', 'This kind of email is called <b>phishing</b>: someone pretends to be another person or company to steal your information. This is what you ticked:')}</p>
-    <ul class="fb-list">${picked.map(item).join('')}</ul>
-    ${missed.length
-    ? `<p><b>${L('Otras señales de alerta en este correo:', 'Other warning signs in this email:')}</b></p><ul class="fb-list">${missed.map(([title, description]) => `<li class="fb-item warn"><span class="fb-ic" aria-hidden="true"></span><div><b>${tx(title)}</b><div>${tx(description)}</div></div></li>`).join('')}</ul>`
-    : `<p class="fb-mission">${L('¡Encontraste todas las señales de alerta!', 'You found all the warning signs!')}</p>`}
-    <p class="fb-retry"><b>${L('Recuerda:', 'Remember:')}</b> ${L('si un correo se ve así, no lo respondas, no toques sus enlaces y nunca compartas tu contraseña. Solo repórtalo como spam.', 'if an email looks like this, don’t reply, don’t tap its links and never share your password. Just report it as spam.')}</p>
-    <div class="fb-actions"><button class="m-big primary" type="button" data-act="mr-close">${L('Continuar', 'Continue')}</button></div>
-  </div>`;
-
-  const box = $m('m-fb').querySelector('.m-fb');
-  box.scrollTop = 0;
-  /** @type {HTMLElement} */ (box.querySelector('.m-big')).focus({ preventScroll: true });
-}
-
 export function showMisreportAnswer() {
   const message = byId(mail.mr.id);
   const picked = [...$m('m-fb').querySelectorAll('input[name=mr]:checked')].map((input) => /** @type {HTMLInputElement} */ (input).value);
@@ -125,11 +90,6 @@ export function showMisreportAnswer() {
       { es: `Explicaste por qué lo reportaste: ${list('es')}`, en: `You explained why you reported it: ${list('en')}` },
       '',
     );
-  }
-
-  if (message.warn) {
-    showPhishAnswer(message, picked);
-    return;
   }
 
   $m('m-fb').innerHTML = `<div class="m-fb" role="dialog" aria-modal="true" aria-labelledby="fb-h">

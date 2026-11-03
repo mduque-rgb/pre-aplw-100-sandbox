@@ -5,11 +5,13 @@ import {
   restoreFolders,
   restoreMessages as restoreMail,
 } from '../domain/mailbox.js';
+import { allFound } from '../domain/inspect.js';
 import { ISSUES } from '../domain/issues.js';
 import { updateLog, withDeleted, withHelp, withIssue, withStep, withTry, withoutDeleted } from '../domain/mission-state.js';
 import { DELETE_GOAL } from '../mission-goals.js';
 import { byId, isSofia, mail, phishMsg } from '../state.js';
 import { showMisreport } from '../ui/misreport.js';
+import { showPhishReported } from './inspect.js';
 import { hideFb } from '../ui/overlay.js';
 import { drawMain, drawSide } from '../ui/render.js';
 import { mailToast } from '../ui/toast.js';
@@ -33,7 +35,13 @@ export function nextReason() {
     hideFb();
     return;
   }
-  showMisreport(byId(next.id), next.phishDone, next.step);
+  const message = byId(next.id);
+  // The fake email gets the detective dialogs; a real one asks why it was reported.
+  if (message.warn) {
+    if (!showPhishReported(message, next.phishDone, next.step)) nextReason();
+    return;
+  }
+  showMisreport(message, next.phishDone, next.step);
 }
 
 export function moveMsgs(ids, destination, text) {
@@ -65,9 +73,9 @@ export function moveMsgs(ids, destination, text) {
       text += L('. ¡Paso 2 completado!', '. Step 2 complete!');
       const phish = phishMsg();
       if (phish && phish.folder === 'spam') {
-        mission = withStep(mission, STEP.REPLY_SOFIA);
+        // Already reported: step 3 is now to find its warning signs, from the Spam folder.
         mission = updateLog(mission, STEP.REPORT_PHISH, { tries: 1, early: true });
-        text += L(' Ya habías reportado el correo falso, así que el paso 3 también está listo.', ' You had already reported the fake email, so step 3 is done too.');
+        text += L(' Ya reportaste el correo falso: ahora ábrelo en la carpeta Spam y descubre sus señales de alerta.', ' You already reported the fake email: now open it in the Spam folder and uncover its warning signs.');
       }
     } else if (counted.length) {
       text += L(`. Borrados: ${mission.deleted.size} de ${DELETE_GOAL}`, `. Deleted: ${mission.deleted.size} of ${DELETE_GOAL}`);
@@ -77,7 +85,8 @@ export function moveMsgs(ids, destination, text) {
   let phishDone = false;
   if (destination === 'spam' && mission.step === STEP.REPORT_PHISH && !mission.done) {
     mission = withTry(mission, STEP.REPORT_PHISH);
-    if (ids.some((id) => byId(id).warn)) {
+    // Reporting it completes step 3 only once every warning sign is found; otherwise the learner keeps investigating.
+    if (ids.some((id) => byId(id).warn) && allFound(mission.found)) {
       mission = withStep(mission, STEP.REPLY_SOFIA);
       phishDone = true;
     }

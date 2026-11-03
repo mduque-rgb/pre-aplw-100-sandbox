@@ -36,6 +36,8 @@ export const mail = {
   misreported: new Set(),
   retryDraft: null,
   mr: null,
+  inspect: null,
+  findHint: false,
 };
 
 /** @param {number} id */
