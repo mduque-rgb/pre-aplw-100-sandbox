@@ -93,14 +93,17 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);displ
 .screen,.layer{overflow:clip}
 .toolbar .address{min-width:0}
 
-/* Large screens: the tablet fills the space left by the reading bar instead of stopping at 980px.
-   It keeps a tablet-like shape (up to 16:9) and the text grows with it. */
+/* Large screens: the tablet has the size and shape of a real 10.9" iPad held sideways (1180 × 820),
+   so it looks like the device learners will use. It is never bigger than that and shrinks to fit
+   smaller windows (and real tablets), keeping its shape; the text grows and shrinks with it. */
 @media (min-width:761px) and (min-height:521px){
+  :root{--tablet-w:min(100%,1180px,calc((100dvh - 90px) * 1180 / 820))}
   body{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);justify-items:center;align-items:center;gap:10px;padding-block:12px}
-  .topbar{flex-direction:row;justify-content:space-between;flex-wrap:wrap;width:100%;max-width:min(100%,calc((100dvh - 90px) * 1.78))}
+  .topbar{flex-direction:row;justify-content:space-between;flex-wrap:wrap;width:100%;max-width:var(--tablet-w)}
   .hint{text-align:left;flex:1 1 20em}
-  .tablet{container-type:size;width:min(100%,calc((100dvh - 90px) * 1.78));height:100%;max-height:calc(100dvh - 90px);aspect-ratio:auto;padding:12px;border-radius:26px}
+  .tablet{container-type:inline-size;width:var(--tablet-w);height:auto;aspect-ratio:1180/820;padding:12px;border-radius:26px}
   .tablet::before{top:3px;width:6px;height:6px}
-  .screen{border-radius:14px;font-size:calc(clamp(11px,1.15cqw,19px) * var(--text-scale))}
+  /* Same text-to-width proportion as the original 980px tablet (14px), so text is as easy to read. */
+  .screen{border-radius:14px;font-size:calc(clamp(11px,1.45cqw,17px) * var(--text-scale))}
   .layer{border-radius:14px}
 }

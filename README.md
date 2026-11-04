@@ -26,7 +26,7 @@ Instructions, tips, the report and the practice emails themselves can be shown i
 - Final report with statistics, areas for improvement, HTML download, copy-to-clipboard option, and a reset feature.
 - Reading options: instructions language (Español/English), text size (100–150 %) and **Listen**, which reads the current instruction aloud with the browser's voice.
 - Progress is saved in the browser, so a reload does not lose the practice.
-- Works on tablets, computers and phones: on large screens the tablet grows to fill the window (up to 16:9) and its text grows with it; on phones the tablet frame is dropped to use the whole screen.
+- Works on tablets, computers and phones: on large screens the tablet has the size and shape of a real 10.9" iPad held sideways (1180 × 820) and shrinks to fit smaller windows, keeping its shape, with text that scales with it; on phones the tablet frame is dropped to use the whole screen.
 - Keyboard navigation and accessible announcements using `aria-live` and focus management; messages stay on screen according to their length and pause while hovered or focused.
 
 ## How to Run
